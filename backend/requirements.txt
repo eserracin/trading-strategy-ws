@@ -1,0 +1,12 @@
+python-binance
+binance-futures-connecto
+websocket-client
+pandas
+numpy
+requests
+python-dotenv
+websockets
+
+fastapi
+uvicorn[standard]
+sse-starlette
