@@ -1,11 +1,10 @@
 import React from 'react';
 
-const ActiveSymbolTable = ({ activeSymbols }) => {
-    // if (activeSymbols.length === 0) {
-    //     // return <div>No active symbols</div>;
-    //     let noActiveSymbolsMessage = "No active symbols";
-    //     let noActiveSymbol = true
-    // }
+const ActiveSymbolTable = ({ marketData }) => {
+
+    const symbols = Object.keys(marketData);
+
+    console.log("📝 Active Symbols:", symbols);
 
     return (
         <div className="overflow-x-auto bg-white shadow-md rounded-xl p-4 mt-10">
@@ -20,7 +19,7 @@ const ActiveSymbolTable = ({ activeSymbols }) => {
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
-          {activeSymbols.length === 0 ? (
+          {symbols.length === 0 ? (
             <tbody className="divide-y divide-gray-200">
               <tr>
                 <td colSpan="6" className="px-4 py-4 text-center text-gray-500">No active symbols</td>
@@ -28,30 +27,33 @@ const ActiveSymbolTable = ({ activeSymbols }) => {
             </tbody>
           ) : (
           <tbody className="divide-y divide-gray-200">
-            {activeSymbols.map((sym) => (
-              <tr key={sym.symbol}>
+            {symbols.map((sym) => {
+              const data = marketData[sym];
+              return (
+              <tr key={sym}>
                 <td className="px-4 py-4 flex items-center gap-2">
-                  <img src={sym.logoUrl} alt={sym.symbol} className="w-5 h-5" />
-                  <span className="font-semibold">{sym.symbol}</span>
+                  <img src={data.logoUrl} alt={data.symbol} className="w-5 h-5" />
+                  <span className="font-semibold">{data.symbol}</span>
                 </td>
-                <td className="px-4 py-4 text-gray-600">${sym.price}</td>
+                <td className="px-4 py-4 text-gray-600">${data.priceChange}</td>
                 <td className="px-4 py-4">
                   <span className={`font-semibold text-xs px-2 py-1 rounded-full ${
-                    parseFloat(sym.change24h) >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'
+                    parseFloat(data.priceChange) >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'
                   }`}>
-                    {sym.change24h}%
+                    {data.priceChange}%
                   </span>
                 </td>
                 <td className="px-4 py-4 text-gray-600">
-                  {sym.high24h} / {sym.low24h}
+                  {data.highPrice} / {data.lowPrice}
                 </td>
-                <td className="px-4 py-4 text-gray-600">{sym.volume24h}</td>
+                <td className="px-4 py-4 text-gray-600">{data.volume}</td>
                 <td className="px-4 py-4">
                   <a href="#" className="text-blue-500 hover:underline text-xs">Data History</a> ·{' '}
                   <a href="#" className="text-blue-500 hover:underline text-xs">Trade</a>
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
           )}
         </table>

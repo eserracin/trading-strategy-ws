@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Query
 from runner import strategy_runner, get_operations
 from model.StrategyEntity import StrategyEntity
+import requests
+from fastapi import HTTPException
 
 router = APIRouter()
 
@@ -26,3 +28,36 @@ async def get_symbols(q: str = Query(None, min_length=1)):
         symbols = [symbol for symbol in all_symbols if q.lower() in symbol.lower()]
         return {"symbols": symbols}
     return {"symbols": all_symbols}
+
+@router.get("/market-data/{symbol}")
+def get_market_data(symbol: str):
+    url = f"https://fapi.binance.com/fapi/v1/ticker/24hr?symbol={symbol.upper()}"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Error al obtener los datos del mercado")
+    
+    data = response.json()
+
+    result  = {
+        "symbol": data["symbol"],
+        "priceChange": data["priceChange"],
+        "priceChangePercent": data["priceChangePercent"],
+        "weightedAvgPrice": data["weightedAvgPrice"],
+        "lastPrice": data["lastPrice"],
+        "lastQty": data["lastQty"],
+        "openPrice": data["openPrice"],
+        "highPrice": data["highPrice"],
+        "lowPrice": data["lowPrice"],
+        "volume": data["volume"],
+        "quoteVolume": data["quoteVolume"],
+        "openTime": data["openTime"],
+        "closeTime": data["closeTime"],
+        "firstId": data["firstId"],
+        "lastId": data["lastId"],
+        "count": data["count"]
+    }
+
+    print('result', result)
+
+    return result

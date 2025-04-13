@@ -64,3 +64,17 @@ export const searchSymbols = async (query) => {
     throw error;
   }
 }
+
+export const getMarketData = async (symbol) => {
+  try {
+    const response = await fetch(`${BASE_URL}/market-data/${symbol}`)
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching market data:', error);
+    throw error;
+  }
+}

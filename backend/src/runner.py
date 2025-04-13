@@ -88,7 +88,7 @@ class StrategyRunner:
             except Exception as e:
                 logger.exception(f"Error en el bucle principal: {e}")
 
-    async def notificar_entrada(data: dict):
+    async def notificar_entrada(self, data: dict):
         data["type"] = "nuevo-trade"
         for client in clients:
             try:

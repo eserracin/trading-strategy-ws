@@ -74,7 +74,7 @@ const StrategyButton = ({ onExecuteStrategy }) => {
                 return alert('Please select a strategy to execute.');
             }
             await executeStrategy(selectedSymbol, selectedStrategy);
-            // onExecuteStrategy();
+            onExecuteStrategy(selectedSymbol);
         } catch (error) {
             console.error('Error executing strategy:', error);
         }
