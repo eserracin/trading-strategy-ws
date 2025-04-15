@@ -1,6 +1,6 @@
 from binance.client import Client
 from binance.enums import SIDE_BUY, SIDE_SELL, ORDER_TYPE_MARKET, TIME_IN_FORCE_GTC
-from config import SYMBOL
+from config.settings import SYMBOL
 import logging
 
 class TradeExecutor:

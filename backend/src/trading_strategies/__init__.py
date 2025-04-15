@@ -1,1 +1,0 @@
-from .scalping.scalping_strategy_lp import ScalpingStrategyLP

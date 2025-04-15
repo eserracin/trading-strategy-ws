@@ -10,4 +10,4 @@ sys.path.append(os.path.join(current_dir, 'src'))
 
 # Ejecutar la app FastAPI desde src/main.py
 if __name__ == "__main__":
-    run("main:app", host="0.0.0.0", port=8000, reload=True, app_dir="src")
+    run("main:app", host="0.0.0.0", port=7000, reload=True, app_dir="src")

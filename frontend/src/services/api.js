@@ -1,14 +1,14 @@
-const BASE_URL = 'http://localhost:8000/api';
+const BASE_URL = 'http://localhost:7000/api';
 
 export const fetchStrategies = async () => {
   try {
     const response = await fetch(`${BASE_URL}/estrategias`)
-    if (!response.ok) {
+    const json = await response.json();
+    console.log(`fetched strategies: ${JSON.stringify(json)}`)
+    if (!json.success) {
       throw new Error('Network response was not ok');
     }
-    const data = await response.json();
-    console.log(`fetched strategies: ${JSON.stringify(data)}`)
-    return data;
+    return json.data;
   } catch (error) {
     console.error('Error fetching strategies:', error);
     throw error;
@@ -54,10 +54,12 @@ export const fetchTrades = async () => {
 export const searchSymbols = async (query) => {
   try {
     const response = await fetch(`${BASE_URL}/symbols?q=${query}`)
-    if (!response.ok) {
+    const json = await response.json();
+    console.log(`fetched symbols: ${JSON.stringify(json)}`)
+    if (!json.success) {
       throw new Error('Network response was not ok');
     }
-    const data = await response.json();
+    const data = json.data;
     return data;
   } catch (error) {
     console.error('Error searching symbols:', error);
@@ -68,10 +70,14 @@ export const searchSymbols = async (query) => {
 export const getMarketData = async (symbol) => {
   try {
     const response = await fetch(`${BASE_URL}/market-data/${symbol}`)
-    if (!response.ok) {
+    const json = await response.json();
+
+    console.log(`fetched market data: ${JSON.stringify(json)}`) 
+
+    if (!json.success) {
       throw new Error('Network response was not ok');
     }
-    const data = await response.json();
+    const data = json.data;
     return data;
   } catch (error) {
     console.error('Error fetching market data:', error);

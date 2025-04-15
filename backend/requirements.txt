@@ -1,5 +1,5 @@
 python-binance
-binance-futures-connecto
+binance-futures-connector
 websocket-client
 pandas
 numpy

@@ -1,4 +1,4 @@
-from trading_strategies.scalping.scalping_strategy_lp import ScalpingStrategyLP
+from src.strategies.scalping.scalping_lp import ScalpingStrategyLP
 
 class ContextStrategy:
     STRATEGIES = {

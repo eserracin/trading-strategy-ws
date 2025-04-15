@@ -3,7 +3,7 @@ from indicators.ema import ema_gpt, ema
 from indicators.rsi import rsi
 from indicators.volume import volume_sma
 from binance.client import Client
-from config import *
+from config.settings import *
 import pandas as pd
 import logging
 

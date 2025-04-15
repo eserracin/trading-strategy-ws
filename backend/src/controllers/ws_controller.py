@@ -1,17 +1,16 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from src.services.ws_manager import ws_manager
 
 router = APIRouter()
 
-clients = []
+# clients = []
 
 @router.websocket("/status-stream")
 async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    clients.append(websocket)
+    await ws_manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-            # await websocket.send_text(f"Message text was: {data}")
+            await websocket.receive_text()
     except WebSocketDisconnect:
-        clients.remove(websocket)
+        ws_manager.disconnect(websocket)
         await websocket.close()
