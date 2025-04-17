@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // import axios from 'axios';
 import ActiveSymbolTable from './ActiveSymbolTable';
 import StrategyButton from './StrategyButton';
+import EntrySignalTable from './EntrySignalTable';
 import { getMarketData } from '../services/api';
 
 const TradingStrategyDashboard = () => {
@@ -25,6 +26,7 @@ const TradingStrategyDashboard = () => {
             <h1 className="text-3xl font-bold text-center text-blue-700">📊 Trading Dashboard</h1>  
             <StrategyButton onExecuteStrategy={fetchMarketData} />
             <ActiveSymbolTable marketData={marketData} />
+            <EntrySignalTable />
         </div>
     )
 }
