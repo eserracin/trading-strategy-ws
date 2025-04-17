@@ -43,7 +43,7 @@ class StrategyRunner:
 
         self.client = Client(api_key=API_KEY, api_secret=API_SECRET, testnet=test)
         trade_strategy = ContextStrategy.get_strategy(strategy=strategy_name, binance_client=self.client, logger=self.logger)
-        trade_executor = TradeExecutor(client=self.client, symbol=symbol, logger=self.logger)
+        trade_executor = TradeExecutor(client=self.client, symbol=symbol, logger=self.logger, isMock=test)
 
         # Obtiene historial inicial sufiecient antes de arrancar el websocket
         df_hist = trade_strategy.obtener_historial_inicial(symbol, INTERVAL, period=50) 
@@ -69,22 +69,78 @@ class StrategyRunner:
                         if modo:
                             qty = trade_strategy.calculate_position_size(entry_price, sl)
                             self.logger.info(f"💥 Señal {modo} - Entry: {entry_price}, SL: {sl}, TP: {tp}")
-                            operaciones.append(
-                                {
-                                    "symbol": symbol,
-                                    "strategy": strategy_name,
-                                    "modo": modo, 
-                                    "entry_price": entry_price, 
-                                    "sl": sl, 
-                                    "tp": tp, 
-                                    "qty": qty}
-                            )
-                            await self.notificar_entrada(operaciones)
+                            # operaciones.append(
+                            #     {
+                            #         "symbol": symbol,
+                            #         "strategy": strategy_name,
+                            #         "modo": modo, 
+                            #         "entry_price": entry_price, 
+                            #         "sl": sl, 
+                            #         "tp": tp, 
+                            #         "qty": qty}
+                            # )
+                            # await self.notificar_entrada(operaciones)
                             # Implementar Trade Manager
-                            # resultado = trade_executor.place_order(mode=mode, entry_price=entry_price, sl_price=sl, tp_price=tp, quantity=position_size)
-                            resultado = None
+                            resultado = trade_executor.place_order(mode=modo, entry_price=entry_price, sl_price=sl, tp_price=tp, quantity=qty)
+                            # resultado = None
                             if resultado:
                                 self.logger.info(f"Ordenes de compra y venta creadas: {resultado}")
+
+                                entry = resultado['order']
+                                if entry:
+                                    self.logger.info(f"Orden de entrada creada: {entry}")
+                                    # Aquí puedes manejar la orden de entrada si es necesario
+                                    operaciones.append(
+                                        {
+                                            "tipo": "nuevo-trade",
+                                            "symbol": symbol,
+                                            "strategy": strategy_name,
+                                            "orden": "ENTRY",
+                                            "order_id": entry['orderId'],
+                                            "price": entry['avgPrice'],
+                                            "side": entry['side'],
+                                            "status": entry['status'],
+                                            "timestamp": candle['T'],
+                                        }
+                                    )
+
+                                sl_order = resultado['sl_order']
+                                if sl_order:
+                                    self.logger.info(f"Orden de Stop Loss creada: {sl_order}")
+                                    # Aquí puedes manejar la orden de Stop Loss si es 
+                                    operaciones.append(
+                                        {
+                                            "tipo": "nuevo-trade",
+                                            "symbol": symbol,
+                                            "strategy": strategy_name,
+                                            "orden": "STOP_LOSS",
+                                            "order_id": sl_order['orderId'],
+                                            "price": sl_order['stopPrice'],
+                                            "side": sl_order['side'],
+                                            "status": sl_order['status'],
+                                            "timestamp": candle['T'],
+                                        }
+                                    )           
+
+                                tp_order = resultado['tp_order']
+                                if tp_order:
+                                    self.logger.info(f"Orden de Take Profit creada: {tp_order}")
+                                    # Aquí puedes manejar la orden de Take Profit si es necesario
+                                    operaciones.append(
+                                        {
+                                            "tipo": "nuevo-trade",
+                                            "symbol": symbol,
+                                            "strategy": strategy_name,
+                                            "orden": "TAKE_PROFIT",
+                                            "order_id": tp_order['orderId'],
+                                            "price": tp_order['price'],
+                                            "side": tp_order['side'],
+                                            "status": tp_order['status'],
+                                            "timestamp": candle['T'],
+                                        }
+                                    )
+                                
+                                await self.notificar_entrada(operaciones)
                             else:
                                 self.logger.error("Error al crear las órdenes de compra y venta.")
             except Exception as e:
