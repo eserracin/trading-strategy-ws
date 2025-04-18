@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchStrategies, executeStrategy, searchSymbols } from '../services/api';
+import useStrategyStore from '../store/strategyStore';
 
 const StrategyButton = ({ onExecuteStrategy }) => {
   const [strategies, setStrategies] = useState([]);
@@ -16,6 +17,8 @@ const StrategyButton = ({ onExecuteStrategy }) => {
 
   const [lastActivated, setLastActivated] = useState({ symbol: '', strategy: '' });
   const [isActivatable, setIsActivatable] = useState(false);
+
+  const activateStrategy = useStrategyStore((state) => state.activateStrategy);
 
   useEffect(() => {
     const loadStrategies = async () => {
@@ -82,6 +85,7 @@ const StrategyButton = ({ onExecuteStrategy }) => {
       await executeStrategy(selectedSymbol, selectedStrategy);
       onExecuteStrategy(selectedSymbol);
       setLastActivated({ symbol: selectedSymbol, strategy: selectedStrategy });
+      activateStrategy(selectedSymbol, selectedStrategy);
     } catch (error) {
       console.error('❌ Error ejecutando estrategia:', error);
     }
