@@ -13,7 +13,7 @@ const EntrySignalTable = (enableSocket) => {
 
     // Establish WebSocket connection
     // and subscribe to the status stream
-    const ws = connectWS("ws://localhost:8000/ws/status-stream");
+    connectWS("ws://localhost:8000/ws/status-stream");
 
     const handleMessage = (data) => {
       if (data.type === "nuevo-trade") {
@@ -27,9 +27,7 @@ const EntrySignalTable = (enableSocket) => {
           amount: data.executedQty
         };
 
-
-
-        setEntries((prevEntries) => [newEntry, ...prevEntries.slice(0, 50)]); // Limit to 5 entries
+        setEntries((prevEntries) => [newEntry, ...prevEntries.slice(0, 49)]); // Limit to 5 entries
       }
     } 
 
@@ -37,7 +35,6 @@ const EntrySignalTable = (enableSocket) => {
 
     return () => {
       unsubscribeFromWS(handleMessage);
-      ws.close();
     };
   }, [socketEnabled]);
 
@@ -59,7 +56,7 @@ const EntrySignalTable = (enableSocket) => {
       {/* Tabla */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm border-separate border-spacing-y-2">
-          <thead className="bg-gray-100 text-gray-600">
+          <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
             <tr>
               <th className="px-4 py-2 border-r border-gray-200">Date</th>
               <th className="px-4 py-2 border-r border-gray-200">Pair</th>

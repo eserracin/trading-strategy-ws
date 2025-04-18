@@ -1,62 +1,62 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ActiveSymbolTable = ({ marketData }) => {
 
+    const { t } = useTranslation();
     const symbols = Object.keys(marketData);
 
     console.log("📝 Active Symbols:", symbols);
 
     return (
-        <div className="overflow-x-auto bg-white shadow-md rounded-xl p-4 mt-10">
-        <table className="min-w-full text-sm text-left text-gray-900">
-          <thead className="bg-blue-100 text-blue-700 uppercase font-semibold text-xs">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Price</th>
-              <th className="px-4 py-3">24h Change</th>
-              <th className="px-4 py-3">24h High / Low</th>
-              <th className="px-4 py-3">24h Volume</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          {symbols.length === 0 ? (
-            <tbody className="divide-y divide-gray-200">
+        <div className="overflow-x-auto bg-white shadow-lg rounded-2xl p-6 mt-10 border border-gray-400">
+
+          {/* Encabezado */}
+          <div className="flex items-center justify-between border-b border-gray-300 pb-2 mb-4">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">🔍 {t('active_symbols.title')}</h2>
+          </div>
+          
+          {/* Tabla */}
+          <table className="min-w-full text-sm text-left border-separate border-spacing-y-2">
+            <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
               <tr>
-                <td colSpan="6" className="px-4 py-4 text-center text-gray-500">No active symbols</td>
+                <th className="px-4 py-2 border-r border-gray-200">Name</th>
+                <th className="px-4 py-2 border-r border-gray-200">Price</th>
+                <th className="px-4 py-2 border-r border-gray-200">24h Change</th>
+                <th className="px-4 py-2 border-r border-gray-200">24h High / Low</th>
+                <th className="px-4 py-2 border-r border-gray-200">24h Volume</th>
+                <th className="px-4 py-2 border-r border-gray-200">Actions</th>
               </tr>
+            </thead>
+
+            <tbody className="divide-y divide-gray-200">
+              {symbols.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="px-4 py-4 text-center text-gray-500">
+                    {t('active_symbols.no_symbols')}
+                  </td>
+                </tr>
+              ) : (
+                symbols.map((symbol) => {
+                  const data = marketData[symbol];
+                  return (
+                    <tr key={symbol} className="hover:bg-gray-50 transition duration-150">
+                      <td className="px-4 py-2 font-medium">{symbol}</td>
+                      <td className="px-4 py-2">{data?.price || '-'}</td>
+                      <td className="px-4 py-2">{data?.change24h || '-'}</td>
+                      <td className="px-4 py-2">
+                        {data?.high24h || '-'} / {data?.low24h || '-'}
+                      </td>
+                      <td className="px-4 py-2">{data?.volume24h || '-'}</td>
+                      <td className="px-4 py-2">
+                        <button className="text-blue-600 hover:underline text-xs">Detalles</button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
-          ) : (
-          <tbody className="divide-y divide-gray-200">
-            {symbols.map((sym) => {
-              const data = marketData[sym];
-              return (
-              <tr key={sym}>
-                <td className="px-4 py-4 flex items-center gap-2">
-                  <img src={data.logoUrl} alt={data.symbol} className="w-5 h-5" />
-                  <span className="font-semibold">{data.symbol}</span>
-                </td>
-                <td className="px-4 py-4 text-gray-600">${data.priceChange}</td>
-                <td className="px-4 py-4">
-                  <span className={`font-semibold text-xs px-2 py-1 rounded-full ${
-                    parseFloat(data.priceChange) >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'
-                  }`}>
-                    {data.priceChange}%
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-gray-600">
-                  {data.highPrice} / {data.lowPrice}
-                </td>
-                <td className="px-4 py-4 text-gray-600">{data.volume}</td>
-                <td className="px-4 py-4">
-                  <a href="#" className="text-blue-500 hover:underline text-xs">Data History</a> ·{' '}
-                  <a href="#" className="text-blue-500 hover:underline text-xs">Trade</a>
-                </td>
-              </tr>
-              )
-            })}
-          </tbody>
-          )}
-        </table>
+          </table>
       </div>    
     );
 

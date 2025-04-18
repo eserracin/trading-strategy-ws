@@ -1,0 +1,11 @@
+{
+    "dashboard": {
+      "title": "Trading Dashboard",
+      "activate_strategy": "Activate Strategy",
+      "market_data": "Market Data"
+    },
+    "signals": {
+      "entry_signals": "Entry Signals"
+    }
+  }
+  

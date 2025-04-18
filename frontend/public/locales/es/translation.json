@@ -1,0 +1,19 @@
+{
+    "dashboard": {
+      "title": "Panel de Administración de Estrategias",
+      "activate_strategy": "Activar Estrategia",
+      "market_data": "Datos del Mercado"
+    },
+    "signals": {
+      "entry_signals": "Señales de Entrada"
+    },
+    "active_symbols": {
+      "title": "Símbolos Activos",
+      "symbol": "Símbolo",
+      "price": "Precio",
+      "change": "Cambio",
+      "volume": "Volumen",
+      "no_symbols": "No hay símbolos activos"
+    }
+  }
+  
