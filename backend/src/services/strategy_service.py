@@ -7,6 +7,11 @@ async def execute_strategy(symbol: str, strategy_name: str, test: bool = False):
     resultado = list(strategy_runner.iniciar_estrategia(symbol, strategy_name, test))
     return {"success": True, "data": resultado}
 
+async def stop_strategy(symbol: str, strategy_name: str):
+    strategy_runner = StrategyRunner()
+    resultado = strategy_runner.detener_estrategia(symbol, strategy_name)
+    return {"success": True, "data": resultado}
+
 async def get_available_strategies():
     strategy_runner = StrategyRunner()
     resultado = strategy_runner.estrategias_disponibles()

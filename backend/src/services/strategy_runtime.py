@@ -11,12 +11,12 @@ import logging
 
 # Diccionario en memerioa para almacenar operaciones activas
 operaciones = []
+tareas = {}
 
 class StrategyRunner:
     def __init__(self):
         self.task = {}
         self.client = Client(api_key=API_KEY, api_secret=API_SECRET)
-        self.logger = None
 
     def estrategias_disponibles(self):
         return list(ContextStrategy.STRATEGIES.keys())
@@ -25,11 +25,21 @@ class StrategyRunner:
         loop = asyncio.new_event_loop()
         tread = threading.Thread(target=self.__run_loop, args=(loop, symbol, strategy_name, test))
         tread.start()
+        self.task[symbol] = (loop, tread)
         return f"Strategy {strategy_name} started for {symbol}"
     
     def __run_loop(self, loop, symbol, strategy_name, test):
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(self._run_strategy(symbol, strategy_name, test))
+        self.task[symbol] = loop.create_task(self._run_strategy(symbol, strategy_name, test))
+        try:
+            loop.run_until_complete(self.task[symbol])
+        except asyncio.CancelledError:
+            self.logger.info("Tarea cancelada")
+        except Exception as e:
+            self.logger.exception(f"Error en el bucle de eventos: {e}")
+        finally:
+            self.logger.info("Tarea finalizada")
+            loop.close()
 
     async def _run_strategy(self, symbol, strategy_name, test):
         self.logger = logging.getLogger(f"{symbol}_{strategy_name}")
@@ -97,7 +107,7 @@ class StrategyRunner:
                                             "strategy": strategy_name,
                                             "orden": "ENTRY",
                                             "order_id": entry['orderId'],
-                                            "price": entry['avgPrice'],
+                                            "price": entry['price'],
                                             "side": entry['side'],
                                             "status": entry['status'],
                                             "timestamp": candle['T'],
@@ -143,6 +153,9 @@ class StrategyRunner:
                                 await self.notificar_entrada(operaciones)
                             else:
                                 self.logger.error("Error al crear las órdenes de compra y venta.")
+            except asyncio.CancelledError:
+                self.logger.warn("⚠️ Estrategia cancelada por el usuario.""Tarea cancelada")
+                raise
             except Exception as e:
                 self.logger.exception(f"Error en el bucle principal: {e}")
 
@@ -151,6 +164,30 @@ class StrategyRunner:
             mensaje = dict(operacion)
             mensaje["type"] = "nuevo-trade"
             await ws_manager.broadcast(mensaje)
+
+    def detener_estrategia(self, symbol, strategy_name):
+        self.logger = logging.getLogger(f"{symbol}_{strategy_name}")
+        self.logger.setLevel(logging.INFO)
+        if symbol in tareas:
+            loop, tread = tareas[symbol]
+            task = self.task.get(symbol)
+
+            if task:
+                def cancel_task():
+                    if not task.done():
+                        task.cancel()
+                        self.logger.info(f"Tarea cancelada para {symbol}")
+
+                loop.call_soon_threadsafe(cancel_task)
+            else:
+                self.logger.info(f"No se encontró la tarea para {symbol}")
+
+            tread.join()
+            del tareas[symbol]
+            self.task.pop(symbol, None)
+            return f"Strategy {strategy_name} stopped for {symbol}"
+        else:
+            return f"No active strategy found for {symbol}"
 
 
     def get_symbols(self):
