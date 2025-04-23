@@ -13,7 +13,16 @@
       "price": "Precio",
       "change": "Cambio",
       "volume": "Volumen",
-      "no_symbols": "No hay símbolos activos"
+      "no_symbols": "No hay símbolos activos",
+      "deactivate": "Desactivar",
+      "table": {
+        "name": "Nombre",
+        "price": "Precio",
+        "change": "Cambio 24H",
+        "high_low": "Máx/Mín 24H",
+        "volume": "Volumen 24H",
+        "actions": "Accion"
+      }
     }
   }
   

@@ -19,6 +19,7 @@ const StrategyButton = ({ onExecuteStrategy }) => {
   const [isActivatable, setIsActivatable] = useState(false);
 
   const activateStrategy = useStrategyStore((state) => state.activateStrategy);
+  const setSelectedStrategyStore = useStrategyStore((state) => state.setSelectedStrategy);
 
   useEffect(() => {
     const loadStrategies = async () => {
@@ -86,6 +87,7 @@ const StrategyButton = ({ onExecuteStrategy }) => {
       onExecuteStrategy(selectedSymbol);
       setLastActivated({ symbol: selectedSymbol, strategy: selectedStrategy });
       activateStrategy(selectedSymbol, selectedStrategy);
+      setSelectedStrategyStore(selectedSymbol, selectedStrategy);
     } catch (error) {
       console.error('❌ Error ejecutando estrategia:', error);
     }

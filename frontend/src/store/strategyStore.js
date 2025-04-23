@@ -4,6 +4,10 @@ const useStrategyStore = create((set, get) => ({
     activeStrategies: {},
     socketEnabled: false,
 
+    selectedSymbol: null,
+    selectedStrategy: null,
+    setSelectedStrategy: (symbol, strategy) => set({ selectedSymbol: symbol, selectedStrategy: strategy }),
+
     // Activar una estrategia
     activateStrategy: (symbol, strategyName) => {
         const update = { ...get().activeStrategies, [symbol]: strategyName  };

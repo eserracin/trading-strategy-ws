@@ -13,7 +13,7 @@ const EntrySignalTable = (enableSocket) => {
 
     // Establish WebSocket connection
     // and subscribe to the status stream
-    connectWS("ws://localhost:8000/ws/status-stream");
+    connectWS(`${import.meta.env.VITE_WS_URL}/status-stream`);
 
     const handleMessage = (data) => {
       if (data.type === "nuevo-trade") {
