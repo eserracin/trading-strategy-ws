@@ -13,7 +13,6 @@ router = APIRouter()
 @router.get("/estrategias")
 async def listar_estrategias():
     resultado = await get_available_strategies()
-    print(f'Estrategias disponibles: {resultado}')
     return resultado
 
 # Ejecutar la estrategia y devolver el resultado
