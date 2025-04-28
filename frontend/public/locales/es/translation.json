@@ -17,10 +17,11 @@
       "deactivate": "Desactivar",
       "table": {
         "name": "Nombre",
+        "strategy": "Estrategia",
+        "interval": "Intervalo",
         "price": "Precio",
-        "change": "Cambio 24H",
-        "high_low": "Máx/Mín 24H",
-        "volume": "Volumen 24H",
+        "close_time": "Hora de Cierre",
+        "volume": "Volumen",
         "actions": "Accion"
       }
     }

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchStrategies, executeStrategy, searchSymbols } from '../services/api';
+import { fetchStrategies, executeStrategy, searchSymbols, createActiveSymbol } from '../services/api';
 import useStrategyStore from '../store/strategyStore';
 
 const StrategyButton = ({ onExecuteStrategy }) => {
@@ -84,6 +84,7 @@ const StrategyButton = ({ onExecuteStrategy }) => {
 
       console.log('🚀 Activando:', selectedSymbol, selectedStrategy);
       await executeStrategy(selectedSymbol, selectedStrategy);
+      // await createActiveSymbol(selectedSymbol, selectedStrategy);
       onExecuteStrategy(selectedSymbol);
       setLastActivated({ symbol: selectedSymbol, strategy: selectedStrategy });
       activateStrategy(selectedSymbol, selectedStrategy);

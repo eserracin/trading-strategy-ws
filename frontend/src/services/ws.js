@@ -1,13 +1,15 @@
-let socket = null;
-let listeners = [];
+let sockets = {};
+let listeners = {};
 
 export const connectWS = (url) => {
-    if (socket) {
-        console.warn('Websocket ya está conectado. No se puede volver a conectar.');
+    if (sockets[url]) {
+        console.warn('Websocket ya está conectado a la URL:', url);
         return;
     }
 
-    socket = new WebSocket(url);
+    const socket = new WebSocket(url);
+    sockets[url] = socket;
+    listeners[url] = [];
 
     socket.onopen = () => {
         console.log('✅ Conexión WebSocket establecida.');
@@ -15,51 +17,60 @@ export const connectWS = (url) => {
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        listeners.forEach(listener => listener(data));
+        listeners[url].forEach(listener => listener(data));
     };
 
     socket.onclose = () => {
         console.warn('⚠️ Conexión WebSocket cerrada:', event.reason);
-        socket = null;
-        setTimeout(() => {
-            console.log('🔄 Reitentando conexion al Websocket...');
-            connectWS(url);
-        }, 5000)
-        
+        // socket = null;
+        delete sockets[url];
+        delete listeners[url];
+        // // Reintentar la conexión después de un tiempo
+        // setTimeout(() => {
+        //     console.log('🔄 Reitentando conexion al Websocket...');
+        //     connectWS(url);
+        // }, 5000)
     };
 
     socket.onerror = (error) => {
-        console.error('❌ Error en WebSocket:', error);
+        console.error(`❌ Error en WebSocket ${url}:`, error);
     };
 }
 
 // Funcion para cerrar la conexion al websocket
 export const closeWS = () => {
-    if (socket) {
-        socket.close();
-        socket = null;
+    if (sockets[url]) {
+        sockets[url].close();
+        // socket = null;
+        delete sockets[url];
+        delete listeners[url];
     } else {
-        console.warn('WebSocket no está conectado. No se puede cerrar.');
+        console.warn(`WebSocket no está conectado para ${url}.`);
     }
 }
 
 // Funcion para enviar un mensaje al websocket
-export const sendMessageToWS = (message) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify(message));
+export const sendMessageToWS = (url, message) => {
+    if (sockets[url] && sockets[url].readyState === WebSocket.OPEN) {
+        sockets[url].send(JSON.stringify(message));
     } else {
-        console.warn('⚠️ No se puede enviar el mensaje. WebSocket no está conectado.');
+        console.warn(`⚠️ No se puede enviar el mensaje. WebSocket no está conectado para ${url}`);
     }
 }
 
-export const suscribeToWS = (callback) => {
-    if (socket) {
-        listeners.push(callback);
-    }
+export const suscribeToWS = (url, callback) => {
+    // if (socket) {
+    //     listeners.push(callback);
+    // }
+    if (!listeners[url]) listeners[url] = [];
+    listeners[url].push(callback);
 }
 
-export const unsubscribeFromWS = (callback) => {
-    if (socket) {
-        listeners = listeners.filter(listener => listener !== callback);
+export const unsubscribeFromWS = (url, callback) => {
+    // if (socket) {
+    //     listeners = listeners.filter(listener => listener !== callback);
+    // }
+    if (listeners[url]) {
+        listeners[url] = listeners[url].filter(listener => listener !== callback);
     }
 }

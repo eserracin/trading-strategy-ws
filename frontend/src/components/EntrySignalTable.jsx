@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { connectWS, suscribeToWS, unsubscribeFromWS } from "../services/ws";
 import useStrategyStore from "../store/strategyStore";
 
-const EntrySignalTable = (enableSocket) => {
+const EntrySignalTable = () => {
   const [entries, setEntries] = useState([]);
   const socketEnabled = useStrategyStore((state) => state.socketEnabled);
 
@@ -11,30 +11,32 @@ const EntrySignalTable = (enableSocket) => {
       return;
     }
 
+    const url = `${import.meta.env.VITE_WS_URL}/status-stream`;
+
     // Establish WebSocket connection
     // and subscribe to the status stream
-    connectWS(`${import.meta.env.VITE_WS_URL}/status-stream`);
+    connectWS(url);
 
     const handleMessage = (data) => {
-      if (data.type === "nuevo-trade") {
+      if (data.tipo === "new-trade") {
 
         const newEntry = {
           date: new Date().toLocaleString("en-GB"),
-          pair: data.symbol,
-          type: data.type,
+          pair: data.simbolo,
+          type: data.orden,
           side: data.side,
-          price: data.price,
-          amount: data.executedQty
+          price: data.precio,
+          amount: data.quantity
         };
 
         setEntries((prevEntries) => [newEntry, ...prevEntries.slice(0, 49)]); // Limit to 5 entries
       }
     } 
 
-    suscribeToWS(handleMessage);
+    suscribeToWS(url, handleMessage);
 
     return () => {
-      unsubscribeFromWS(handleMessage);
+      unsubscribeFromWS(url, handleMessage);
     };
   }, [socketEnabled]);
 

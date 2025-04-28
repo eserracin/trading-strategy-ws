@@ -8,7 +8,6 @@ const ReusableTable = ({
   className = ''
 }) => {
   return (
-    <div className={`overflow-x-auto bg-white shadow-lg rounded-2xl p-6 border border-gray-400 ${className}`}>
       <table className="min-w-full text-sm text-left border-separate border-spacing-y-2">
         <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
           <tr>
@@ -31,7 +30,6 @@ const ReusableTable = ({
           )}
         </tbody>
       </table>
-    </div>
   );
 };
 

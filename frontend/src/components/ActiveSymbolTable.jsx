@@ -1,15 +1,17 @@
-import React, { use, useState } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { closeWS } from '../services/ws';
 import { stopStrategy } from '../services/api';
 import useStrategyStore from '../store/strategyStore';
 import ReusableTable from './util/ReusableTable';
+import { connectWS, suscribeToWS, unsubscribeFromWS } from "../services/ws";
 
 const ActiveSymbolTable = ({ marketData }) => {
 
     const { t } = useTranslation();
     const [symbolsData, setSymbolsData] = useState(marketData);
     const { selectedStrategy } = useStrategyStore();
+    const socketEnabled = useStrategyStore((state) => state.socketEnabled);
 
     const handleDeactivate = async (symbol) => {
       try {
@@ -27,15 +29,43 @@ const ActiveSymbolTable = ({ marketData }) => {
 
     const headers = [
         t('active_symbols.table.name'),
+        t('active_symbols.table.strategy'),
         t('active_symbols.table.price'),
-        t('active_symbols.table.change'),
-        t('active_symbols.table.high_low'),
+        t('active_symbols.table.interval'),
+        t('active_symbols.table.close_time'),
         t('active_symbols.table.volume'),
         t('active_symbols.table.actions')
     ];
 
    const renderRow = (symbol, index) => {
-    const data = marketData[symbol];
+    // const data = marketData[symbol];
+
+    useEffect(() => {
+      if (!socketEnabled) {
+        return;
+      }
+
+      const url_ws = import.meta.env.VITE_WS_URL + '/candle-stream';
+
+      connectWS(url_ws);
+
+      const handleMessage = (data) => {
+        if (data.tipo === 'candle') {
+          setSymbolsData((prevData) => ({
+            ...prevData,
+            [data.symbol]: data
+          }));
+        }
+      };
+
+      suscribeToWS(url, handleMessage);
+
+      return () => {
+        unsubscribeFromWS(url, handleMessage);
+      };
+    }, [socketEnabled]);
+
+
     return (
       <tr key={symbol} className="hover:bg-gray-50 transition duration-150">
         <td className="px-4 py-2 font-medium">{symbol}</td>
@@ -75,53 +105,6 @@ const ActiveSymbolTable = ({ marketData }) => {
             noDataMessage={t('active_symbols.no_symbols')}
             className="min-w-full text-sm text-left border-separate border-spacing-y-2"
           />  
-          
-          {/* Tabla
-          <table className="min-w-full text-sm text-left border-separate border-spacing-y-2">
-            <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-              <tr>
-                <th className="px-4 py-2 border-r border-gray-200">Name</th>
-                <th className="px-4 py-2 border-r border-gray-200">Price</th>
-                <th className="px-4 py-2 border-r border-gray-200">24h Change</th>
-                <th className="px-4 py-2 border-r border-gray-200">24h High / Low</th>
-                <th className="px-4 py-2 border-r border-gray-200">24h Volume</th>
-                <th className="px-4 py-2 border-r border-gray-200">Actions</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-gray-200">
-              {symbols.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="px-4 py-4 text-center text-gray-500">
-                    {t('active_symbols.no_symbols')}
-                  </td>
-                </tr>
-              ) : (
-                symbols.map((symbol) => {
-                  const data = symbolsData[symbol];
-                  return (
-                    <tr key={symbol} className="hover:bg-gray-50 transition duration-150">
-                      <td className="px-4 py-2 font-medium">{symbol}</td>
-                      <td className="px-4 py-2">{data?.price || '-'}</td>
-                      <td className="px-4 py-2">{data?.change24h || '-'}</td>
-                      <td className="px-4 py-2">
-                        {data?.high24h || '-'} / {data?.low24h || '-'}
-                      </td>
-                      <td className="px-4 py-2">{data?.volume24h || '-'}</td>
-                      <td className="px-4 py-2">
-                        <button
-                          onClick={() => handleDeactivate(symbol)}
-                          className="text-red-600 hover:underline text-xs"
-                        >
-                          {t('active_symbols.deactivate')}
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table> */}
       </div>    
     );
 
