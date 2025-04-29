@@ -1,12 +1,12 @@
 from src.services.strategy_runtime import StrategyRunner
+from src.core import ContextStrategy
 import requests
 from fastapi import HTTPException
 
 strategy_runner = StrategyRunner()
 
-async def execute_strategy(symbol: str, strategy_name: str, test: bool = False):
-    resultado = strategy_runner.iniciar_estrategia(symbol, strategy_name, test)
-    # print(f"****DEBUG: Resultado de iniciar estrategia: {resultado}")
+async def execute_strategy(symbol: str, strategy_name: str, timeframe: str, test: bool = False):
+    resultado = strategy_runner.iniciar_estrategia(symbol, strategy_name, timeframe, test)
     return {"success": True, "data": resultado}
 
 async def stop_strategy(symbol: str, strategy_name: str):
@@ -19,7 +19,7 @@ async def stop_strategy(symbol: str, strategy_name: str):
     return {"success": True, "data": resultado}
 
 async def get_available_strategies():
-    resultado = strategy_runner.estrategias_disponibles()
+    resultado = list(ContextStrategy.STRATEGIES.keys())
     return {"success": True, "data": resultado}
 
 async def get_symbols(q: str = None):

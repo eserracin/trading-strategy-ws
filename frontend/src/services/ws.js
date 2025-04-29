@@ -38,7 +38,7 @@ export const connectWS = (url) => {
 }
 
 // Funcion para cerrar la conexion al websocket
-export const closeWS = () => {
+export const closeWS = (url) => {
     if (sockets[url]) {
         sockets[url].close();
         // socket = null;

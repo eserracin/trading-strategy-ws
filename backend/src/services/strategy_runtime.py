@@ -19,12 +19,14 @@ class StrategyRunner:
     def __init__(self):
         self.task = {}
         self.client = Client(api_key=API_KEY, api_secret=API_SECRET)
+        self.timeframe = INTERVAL
 
-    def estrategias_disponibles(self):
-        return list(ContextStrategy.STRATEGIES.keys())
+    # def estrategias_disponibles(self):
+    #     return list(ContextStrategy.STRATEGIES.keys())
     
-    def iniciar_estrategia(self, symbol, strategy_name, test=False):
+    def iniciar_estrategia(self, symbol, strategy_name, timeframe, test=False):
         key = f"{symbol}_{strategy_name}"
+        self.timeframe = timeframe
         if key in self.task:
             _, thread = self.task[key]
             if thread.is_alive():
@@ -63,7 +65,6 @@ class StrategyRunner:
 
             logger.info("🔎 Loop cerrado correctamente.")
 
-
     async def _run_strategy(self, symbol, strategy_name, test):
         logger.info(f"symbol: {symbol}, strategy: {strategy_name}, test: {test}")
         logger.info("Iniciando estrategia...")
@@ -76,9 +77,24 @@ class StrategyRunner:
         df_hist = trade_strategy.obtener_historial_inicial(symbol, INTERVAL, period=50) 
 
         try:
-            async with BinanceWebSocket(symbol, INTERVAL, logger) as bws:
+            async with BinanceWebSocket(symbol, self.timeframe, logger) as bws:
                 async for kline in bws.klines_stream():
                     candle = kline["k"]
+
+                    # Siempre que recibimos nueva data, enviamos a clientes
+                    await self.notificar_candle({
+                        "symbol": symbol,
+                        "open_time": candle["t"],
+                        "open": float(candle["o"]),
+                        "high": float(candle["h"]),
+                        "low": float(candle["l"]),
+                        "close": float(candle["c"]),
+                        "volume": float(candle["v"]),
+                        "interval": candle["i"],
+                        "close_time": candle["T"],
+                    })
+
+
                     if candle["x"]:
                         nueva_fila = pd.DataFrame([{
                             "open_time": candle["t"],
@@ -172,6 +188,22 @@ class StrategyRunner:
             mensaje = dict(operacion)
             await ws_manager.broadcast(mensaje, group=group)
 
+    async def notificar_candle(self, candle: dict, group="candles"):
+        mensaje = {
+            "tipo": "candle",
+            "symbol": candle["symbol"],
+            "open_time": candle["open_time"],
+            "open": candle["open"],
+            "high": candle["high"],
+            "low": candle["low"],
+            "close": candle["close"],
+            "volume": candle["volume"],
+            "interval": candle["interval"],
+            "close_time": candle["close_time"]
+        }
+        # logger.info(f"📊 Enviando candle a clientes: {mensaje}")
+        await ws_manager.broadcast(mensaje, group=group)
+
     def detener_estrategia(self, symbol, strategy_name):
         import time
 
@@ -180,17 +212,8 @@ class StrategyRunner:
             logger.warning(f"⚠️ La estrategia {strategy_name} no está en ejecución para {symbol}")
             return f"La estrategia {strategy_name} no está en ejecución para {symbol}"
         
-        # # Esperar hasta que el loop esté disponible (máximo 1 segundo)
-        # max_wait = 1.0
-        # waited = 0
-        # while self.task[key][0] is None and waited < max_wait:
-        #     time.sleep(0.1)
-        #     waited += 0.1
 
         loop, thread = self.task[key]
-
-        # if loop is None:
-        #     return f"La estrategia {strategy_name} no está en ejecución para {symbol}"
 
         async def cancelar_tareas():
             tasks = [t for t in asyncio.all_tasks(loop) if t is not asyncio.current_task(loop)]
@@ -202,13 +225,11 @@ class StrategyRunner:
                     logger.info(f"⛔ Tarea {task.get_name()} cancelada correctamente.")
             loop.stop()
 
-        # loop.call_soon_threadsafe(cancelar_tareas)
         asyncio.run_coroutine_threadsafe(cancelar_tareas(), loop=loop)
         thread.join()
 
         loop.close()
 
-        # if key in self.task:
         del self.task[key]
 
         logger.info(f"🔎 Estado actual de tareas: {list(self.task.keys())}")

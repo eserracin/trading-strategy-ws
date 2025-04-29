@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from controllers.http_controller import router as http_router
 from controllers.ws_controller import router as ws_router
-from backend.src.controllers.simbolos_controller import router as simbolos_router
+from controllers.simbolos_controller import router as simbolos_router
+from controllers.estrategias_controller import router as estrategias_router
 from src.database.init_db import init_db
 import signal
 import logging
@@ -63,6 +64,7 @@ app.add_middleware(
 # Rutas de la API
 app.include_router(http_router, prefix="/api")
 app.include_router(simbolos_router, prefix="/api/symbol")
+app.include_router(estrategias_router, prefix="/api/strategy")
 # Rutas de WebSocket
 app.include_router(ws_router, prefix="/ws")
 

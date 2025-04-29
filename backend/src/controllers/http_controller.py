@@ -10,22 +10,18 @@ from src.services.strategy_service import (
 
 router = APIRouter()
 
-@router.get("/estrategias")
-async def listar_estrategias():
-    resultado = await get_available_strategies()
-    return resultado
 
-# Ejecutar la estrategia y devolver el resultado
-@router.post("/ejecutar-estrategia")
-async def ejecutar_estrategia(req: StrategyEntity):
-    resultado = await execute_strategy(req.symbol, req.strategy, req.test)
-    return resultado
+# # Ejecutar la estrategia y devolver el resultado
+# @router.post("/ejecutar-estrategia")
+# async def ejecutar_estrategia(req: StrategyEntity):
+#     resultado = await execute_strategy(req.symbol, req.strategy, req.test)
+#     return resultado
 
- # Detener la estrategia y devolver el resultado
-@router.post("/detener-estrategia")
-async def detener_estrategia(req: StrategyEntity):
-    resultado = await stop_strategy(req.symbol, req.strategy)
-    return resultado
+#  # Detener la estrategia y devolver el resultado
+# @router.post("/detener-estrategia")
+# async def detener_estrategia(req: StrategyEntity):
+#     resultado = await stop_strategy(req.symbol, req.strategy)
+#     return resultado
 
 # @router.get("/operaciones")
 # def obtener_operaciones():
