@@ -15,6 +15,7 @@
       "volume": "Volumen",
       "no_symbols": "No hay símbolos activos",
       "deactivate": "Desactivar",
+      "loading": "Cargando simbolo...",
       "table": {
         "name": "Nombre",
         "strategy": "Estrategia",

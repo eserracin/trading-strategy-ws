@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchStrategies, executeStrategy, searchSymbols, createActiveSymbol } from '../services/api';
 import useStrategyStore from '../store/strategyStore';
@@ -16,7 +15,8 @@ const StrategyButton = ({ onExecuteStrategy }) => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef(null);
 
-  const [lastActivated, setLastActivated] = useState({ symbol: '', strategy: '' });
+  // const [lastActivated, setLastActivated] = useState({ symbol: '', strategy: '' });
+  // const lastActivated = useStrategyStore((state) => state.lastActivated);
   const [isActivatable, setIsActivatable] = useState(false);
 
   const activateStrategy = useStrategyStore((state) => state.activateStrategy);
@@ -31,6 +31,7 @@ const StrategyButton = ({ onExecuteStrategy }) => {
   }, [selectedStrategy]);
 
 
+  // Carga inicial de estrategias
   useEffect(() => {
     const loadStrategies = async () => {
       try {
@@ -44,16 +45,21 @@ const StrategyButton = ({ onExecuteStrategy }) => {
     loadStrategies();
   }, []);
 
+  // Activar el boton de activar estrategia si hay un símbolo y una estrategia seleccionados
   useEffect(() => {
     const isNewCombo =
       selectedSymbol &&
       selectedStrategy &&
       (selectedSymbol !== lastActivated.symbol || selectedStrategy !== lastActivated.strategy);
+
     console.log('🧠 Evaluando combinación:', selectedSymbol, selectedStrategy);
     console.log('🆚 Última activada:', lastActivated);
     console.log('🔁 ¿Se puede activar?', isNewCombo);
-    setIsActivatable(isNewCombo);
+
+    if (isActivatable !== isNewCombo) setIsActivatable(isNewCombo);
+
   }, [selectedSymbol, selectedStrategy, lastActivated]);
+
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -85,6 +91,8 @@ const StrategyButton = ({ onExecuteStrategy }) => {
     return () => clearTimeout(delayDebounce);
   }, [symbolQuery]);
 
+
+  // Evento Click => Boton de activar estrategia
   const handleClick = async () => {
     try {
       if (!selectedStrategy || !selectedSymbol || !selectedTimeframe) {
@@ -93,12 +101,12 @@ const StrategyButton = ({ onExecuteStrategy }) => {
       }
 
       console.log('🚀 Activando:', selectedSymbol, selectedStrategy);
-      await executeStrategy(selectedSymbol, selectedStrategy, selectedTimeframe); // ======> AQUI DEBO PASAR EL TIMEFRAME
+      await executeStrategy(selectedSymbol, selectedStrategy, selectedTimeframe);
       // await createActiveSymbol(selectedSymbol, selectedStrategy);
       onExecuteStrategy(selectedSymbol);
-      setLastActivated({ symbol: selectedSymbol, strategy: selectedStrategy });
+      // lastActivated({ symbol: selectedSymbol, strategy: selectedStrategy });
       activateStrategy(selectedSymbol, selectedStrategy);
-      setSelectedStrategyStore(selectedSymbol, selectedStrategy);
+      setSelectedStrategyStore(selectedSymbol, selectedStrategy, selectedTimeframe);
     } catch (error) {
       console.error('❌ Error ejecutando estrategia:', error);
     }

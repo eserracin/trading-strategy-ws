@@ -20,16 +20,11 @@ export const connectWS = (url) => {
         listeners[url].forEach(listener => listener(data));
     };
 
-    socket.onclose = () => {
+    socket.onclose = (event) => {
+        listeners.url.forEach(listener => listener({ tipo: 'closed', reason: event.reason }));
         console.warn('⚠️ Conexión WebSocket cerrada:', event.reason);
-        // socket = null;
         delete sockets[url];
         delete listeners[url];
-        // // Reintentar la conexión después de un tiempo
-        // setTimeout(() => {
-        //     console.log('🔄 Reitentando conexion al Websocket...');
-        //     connectWS(url);
-        // }, 5000)
     };
 
     socket.onerror = (error) => {
@@ -41,7 +36,6 @@ export const connectWS = (url) => {
 export const closeWS = (url) => {
     if (sockets[url]) {
         sockets[url].close();
-        // socket = null;
         delete sockets[url];
         delete listeners[url];
     } else {
@@ -59,17 +53,15 @@ export const sendMessageToWS = (url, message) => {
 }
 
 export const suscribeToWS = (url, callback) => {
-    // if (socket) {
-    //     listeners.push(callback);
-    // }
     if (!listeners[url]) listeners[url] = [];
-    listeners[url].push(callback);
+
+    if (!listeners[url].includes(callback)) {
+        listeners[url].push(callback);
+    }
+    
 }
 
 export const unsubscribeFromWS = (url, callback) => {
-    // if (socket) {
-    //     listeners = listeners.filter(listener => listener !== callback);
-    // }
     if (listeners[url]) {
         listeners[url] = listeners[url].filter(listener => listener !== callback);
     }
