@@ -22,9 +22,6 @@ class WebSocketManager:
             if websocket in self.active_connections[group]:
                 self.active_connections[group].remove(websocket)
                 self.logger.info(f"🔌 Cliente WebSocket desconectado del grupo: '{group}': {websocket}")
-        # if websocket in self.active_connections:
-        #     self.active_connections.remove(websocket)
-        #     self.logger.info(f"🔌 Cliente WebSocket desconectado: {websocket}")
 
     async def broadcast(self, message: dict, group: str = "status"):
         if group not in self.active_connections:

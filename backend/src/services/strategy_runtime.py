@@ -81,6 +81,8 @@ class StrategyRunner:
                 async for kline in bws.klines_stream():
                     candle = kline["k"]
 
+                    groupName = symbol + strategy_name
+
                     # Siempre que recibimos nueva data, enviamos a clientes
                     await self.notificar_candle({
                         "symbol": symbol,
@@ -92,7 +94,7 @@ class StrategyRunner:
                         "volume": float(candle["v"]),
                         "interval": candle["i"],
                         "close_time": candle["T"],
-                    })
+                    }, group=groupName)
 
 
                     if candle["x"]:
