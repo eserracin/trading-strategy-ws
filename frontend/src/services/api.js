@@ -15,7 +15,7 @@ export const fetchStrategies = async () => {
   }
 }
 
-export const executeStrategy = async (symbol, strategy, timeframe, test = true) => {
+export const startStrategy = async (symbol, strategy, timeframe, test = true) => {
     try {
         const res = await fetch(`${BASE_URL}/strategy/ejecutar-estrategia`, {
         method: 'POST',
@@ -37,14 +37,14 @@ export const executeStrategy = async (symbol, strategy, timeframe, test = true) 
     }
   }
 
-export const stopStrategy = async (symbol, strategy) => {
+export const stopStrategy = async (symbol, strategy, timeframe) => {
   try {
     const res = await fetch(`${BASE_URL}/strategy/detener-estrategia`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ symbol, strategy }),
+      body: JSON.stringify({ symbol, strategy, timeframe }),
     })
 
     if (!res.ok) {

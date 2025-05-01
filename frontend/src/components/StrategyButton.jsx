@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchStrategies, executeStrategy, searchSymbols, createActiveSymbol } from '../services/api';
+import { fetchStrategies, startStrategy, searchSymbols, createActiveSymbol } from '../services/api';
 import useStrategyStore from '../store/strategyStore';
 import timeframes from '../assets/config/timeframes.json';
 
@@ -10,26 +10,20 @@ const StrategyButton = ({ onExecuteStrategy }) => {
   const [symbolQuery, setSymbolQuery] = useState('');
   const [symbolSuggestions, setSymbolSuggestions] = useState([]);
   const [selectedSymbol, setSelectedSymbol] = useState('');
-  const symbolCache = useRef(new Map());
-
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef(null);
+  const symbolCache = useRef(new Map());
 
-  // const [lastActivated, setLastActivated] = useState({ symbol: '', strategy: '' });
-  // const lastActivated = useStrategyStore((state) => state.lastActivated);
+  const activateStrategyStore = useStrategyStore((state) => state.activateStrategy);
+  const setSelectedStrategyStore = useStrategyStore((state) => state.setSelectedStrategy);
+  const activeStrategies = useStrategyStore((state) => state.activeStrategies);
+
   const [isActivatable, setIsActivatable] = useState(false);
 
-  const activateStrategy = useStrategyStore((state) => state.activateStrategy);
-  const setSelectedStrategyStore = useStrategyStore((state) => state.setSelectedStrategy);
-
-  // Cambiar temporalidad cada vez que se cambia la estrategia
   useEffect(() => {
-    if (selectedStrategy) {
-      const strategyTimeframe = strategies.find((s) => s.name === selectedStrategy)?.timeframe;
-      setSelectedTimeframe(strategyTimeframe || '');
-    }
-  }, [selectedStrategy]);
-
+    const strategy = strategies.find((s) => s.name === selectedStrategy);
+    setSelectedTimeframe(strategy?.timeframe || '');
+  }, [selectedStrategy, strategies]);
 
   // Carga inicial de estrategias
   useEffect(() => {
@@ -47,24 +41,16 @@ const StrategyButton = ({ onExecuteStrategy }) => {
 
   // Activar el boton de activar estrategia si hay un símbolo y una estrategia seleccionados
   useEffect(() => {
-    const isNewCombo =
-      selectedSymbol &&
-      selectedStrategy &&
-      (selectedSymbol !== lastActivated.symbol || selectedStrategy !== lastActivated.strategy);
-
-    console.log('🧠 Evaluando combinación:', selectedSymbol, selectedStrategy);
-    console.log('🆚 Última activada:', lastActivated);
-    console.log('🔁 ¿Se puede activar?', isNewCombo);
-
-    if (isActivatable !== isNewCombo) setIsActivatable(isNewCombo);
-
-  }, [selectedSymbol, selectedStrategy, lastActivated]);
-
+    const key = selectedSymbol + selectedStrategy + selectedTimeframe;
+    const alreadyExists = !!activeStrategies[key];
+    setIsActivatable(
+      selectedSymbol && selectedStrategy && selectedTimeframe && !alreadyExists
+    );
+  }, [selectedSymbol, selectedStrategy, selectedTimeframe, activeStrategies]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       if (symbolQuery.length < 2) {
-        console.log('⚠️ Símbolo muy corto');
         setSymbolSuggestions([]);
         return;
       }
@@ -94,18 +80,16 @@ const StrategyButton = ({ onExecuteStrategy }) => {
 
   // Evento Click => Boton de activar estrategia
   const handleClick = async () => {
-    try {
       if (!selectedStrategy || !selectedSymbol || !selectedTimeframe) {
         alert('Debes seleccionar símbolo, estrategia y temporalidad.');
         return;
       }
 
-      console.log('🚀 Activando:', selectedSymbol, selectedStrategy);
-      await executeStrategy(selectedSymbol, selectedStrategy, selectedTimeframe);
+    try {
+      await startStrategy(selectedSymbol, selectedStrategy, selectedTimeframe);
       // await createActiveSymbol(selectedSymbol, selectedStrategy);
       onExecuteStrategy(selectedSymbol);
-      // lastActivated({ symbol: selectedSymbol, strategy: selectedStrategy });
-      activateStrategy(selectedSymbol, selectedStrategy);
+      activateStrategyStore(selectedSymbol, selectedStrategy, selectedTimeframe);
       setSelectedStrategyStore(selectedSymbol, selectedStrategy, selectedTimeframe);
     } catch (error) {
       console.error('❌ Error ejecutando estrategia:', error);
@@ -113,21 +97,22 @@ const StrategyButton = ({ onExecuteStrategy }) => {
   };
 
   const handleReset = () => {
-    console.log('🔄 Limpiando');
     setSymbolQuery('');
     setSelectedSymbol('');
     setSelectedStrategy('');
+    setSelectedTimeframe('');
     setIsActivatable(false);
   };
 
   return (
-    
     <div className="bg-blue-50 border border-blue-400 rounded-lg shadow p-4 w-full max-w-5xl mx-auto">
 
       {/* Encabezado */}
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-primary font-semibold text-base flex items-center gap-2">
-          <svg className="w-5 h-5 fill-blue-600" viewBox="0 0 24 24"><path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 .8 1.6L15 13.2V19a1 1 0 0 1-1.45.9l-4-2A1 1 0 0 1 9 17v-3.8L3.2 4.6A1 1 0 0 1 3 4z"/></svg>
+          <svg className="w-5 h-5 fill-blue-600" viewBox="0 0 24 24">
+            <path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 .8 1.6L15 13.2V19a1 1 0 0 1-1.45.9l-4-2A1 1 0 0 1 9 17v-3.8L3.2 4.6A1 1 0 0 1 3 4z"/>
+          </svg>
           Filtro
         </h3>
       </div>
@@ -158,15 +143,13 @@ const StrategyButton = ({ onExecuteStrategy }) => {
               } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 setHighlightedIndex((prev) => Math.max(prev - 1, -1));
-              } else if (e.key === 'Enter') {
-                if (highlightedIndex !== -1) {
+              } else if (e.key === 'Enter' && highlightedIndex !== -1) {
                   const selected = symbolSuggestions[highlightedIndex];
                   setSelectedSymbol(selected);
                   setSymbolQuery(selected);
                   setSymbolSuggestions([]);
                   setHighlightedIndex(-1);
                 }
-              }
             }}
           />
           {symbolSuggestions.length > 0 && (
@@ -216,9 +199,7 @@ const StrategyButton = ({ onExecuteStrategy }) => {
           >
             <option value="">Selecciona temporalidad</option>
             {timeframes.map((tf) => (
-              <option key={tf.value} value={tf.value}>
-                {tf.label}
-              </option>
+              <option key={tf.value} value={tf.value}>{tf.label}</option>
             ))}
           </select>
         </div>
@@ -231,7 +212,9 @@ const StrategyButton = ({ onExecuteStrategy }) => {
             onClick={handleClick}
             disabled={!isActivatable}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="white"><path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 .8 1.6L15 13.2V19a1 1 0 0 1-1.45.9l-4-2A1 1 0 0 1 9 17v-3.8L3.2 4.6A1 1 0 0 1 3 4z"/></svg>
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="white">
+              <path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 .8 1.6L15 13.2V19a1 1 0 0 1-1.45.9l-4-2A1 1 0 0 1 9 17v-3.8L3.2 4.6A1 1 0 0 1 3 4z"/>
+            </svg>
             Activar
           </button>
           <button

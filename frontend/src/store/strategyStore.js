@@ -1,64 +1,56 @@
+// strategyStore.js (refactorizado para incluir timeframe en la clave)
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 const useStrategyStore = create(
-    devtools((set, get) => ({
-        activeStrategies: {},
-        selectedSymbol: null,
-        selectedStrategy: null,
-        selectedTimeframe: null,
-        lastActivated: null,
+  devtools((set, get) => ({
+    activeStrategies: {},
+    selectedSymbol: null,
+    selectedStrategy: null,
+    selectedTimeframe: null,
 
-        setSelectedStrategy: (symbol, strategy, timeframe) => set({ selectedSymbol: symbol, selectedStrategy: strategy, selectedTimeframe: timeframe }),
-        setLastActivated: (symbol, strategy) => set({ symbol, strategy }),  
+    setSelectedStrategy: (symbol, strategy, timeframe) =>
+      set({ selectedSymbol: symbol, selectedStrategy: strategy, selectedTimeframe: timeframe }),
 
-        // Activar una estrategia
-        activateStrategy: (symbol, strategyName) => {
-            const key = symbol+strategyName;
-            const currentStrategy = get().activeStrategies[key];
-            if (currentStrategy) return;
+    activateStrategy: (symbol, strategyName, timeframe) => {
+      const key = symbol + strategyName + timeframe;
+      const current = get().activeStrategies[key];
+      if (current) return;
 
-            const update = {
-                ...get().activeStrategies, 
-                [key]: {
-                    symbol,
-                    strategyName,
-                    socketEnabled: true,
-                    status: 'loading'
-                }  
-            };
-
-
-            set({ activeStrategies: update});
+      const updated = {
+        ...get().activeStrategies,
+        [key]: {
+          symbol,
+          strategyName,
+          timeframe,
+          // socketEnabled: true,
+          status: 'loading',
         },
+      };
 
-        // Actualizar el estado de una estrategia
-        updateStrategyStatus: (symbol, strategyName, status) => {
-            const key = symbol+strategyName;
-            const update = { ...get().activeStrategies };
-            if (update[key]) {
-                update[key].status = status;
-                set({ activeStrategies: update });
-            }
-        },
+      set({ activeStrategies: updated });
+    },
 
-        // Desactivar una estrategia
-        deactivateStrategy: (symbol, strategyName) => {
+    updateStrategyStatus: (key, status) => {
+      // const key = symbol + strategyName + timeframe;
+      const update = { ...get().activeStrategies };
+      if (update[key]) {
+        update[key].status = status;
+        set({ activeStrategies: update });
+      }
+    },
 
-            const key = symbol+strategyName;
+    deactivateStrategy: (symbol, strategyName, timeframe) => {
+      const key = symbol + strategyName + timeframe;
+      const update = { ...get().activeStrategies };
+      delete update[key];
+      set({ activeStrategies: update });
+    },
 
-            const update = { ...get().activeStrategies };
-            delete update[key];
-
-            set({ activeStrategies: update });
-        },
-
-        // Limpiar todas las estrategias activas
-        clearAllStrategies: () => {
-            set({ activeStrategies: {} });
-        }
-
-    }))
+    clearAllStrategies: () => {
+      set({ activeStrategies: {} });
+    },
+  }))
 );
 
 export default useStrategyStore;

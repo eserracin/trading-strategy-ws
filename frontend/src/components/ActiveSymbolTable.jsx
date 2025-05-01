@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { stopStrategy } from '../services/api';
 import useStrategyStore from '../store/strategyStore';
@@ -12,12 +12,11 @@ const ActiveSymbolTable = ({ marketData }) => {
     const [symbolsData, setSymbolsData] = useState(marketData || {});
 
     const activeStrategies = useStrategyStore(state => state.activeStrategies);
-    const deactivateStrategy = useStrategyStore(state => state.deactivateStrategy);
-    const selectedTimeframe = useStrategyStore(state => state.selectedTimeframe);
-    
+    const deactivateStrategyStore = useStrategyStore(state => state.deactivateStrategy);
+    const updateStrategyStatusStore = useStrategyStore(state => state.updateStrategyStatus);
+    const connectionRef = useRef(new Map());    
     const [timeLeft, setTimeLeft] = useState({});
     const [flashSymbols, setFlashSymbols] = useState({});
-    const [isLoadingSymbols, setIsLoadingSymbols] = useState({});
 
 
     useEffect(() => {
@@ -25,31 +24,19 @@ const ActiveSymbolTable = ({ marketData }) => {
     }, [marketData]); 
 
     useEffect(() => {
-      const connections = []
 
+      // ---------- Altas ----------------
       Object.entries(activeStrategies).forEach(([key, config]) => {
-        const { symbol, strategyName, socketEnabled } = config;
-
-        console.log(`111 Activando:  estrategia = ${strategyName}, símbolo = ${symbol}, habilitado = ${socketEnabled}`);
-
-        if (!socketEnabled) return;
-
-        const keyLoading = symbol+strategyName;
-        const url_ws = import.meta.env.VITE_WS_URL + `/candle-stream/${keyLoading}`;
-
-        connectWS(url_ws);
-        setIsLoadingSymbols((prev) => ({ ...prev, [keyLoading]: true }));
+  
+        if (connectionRef.current.has(key)) return;
+        const url_ws = `${import.meta.env.VITE_WS_URL}/candle-stream/${key}`;
 
         const handleMessage = (data) => {
           if (data.tipo === 'candle') {
 
-            setIsLoadingSymbols((prev) => ({ ...prev, [keyLoading]: false }));
-
-            const symbolStrategyKey = symbol+strategyName;
-
             setSymbolsData((prevData) => ({
               ...prevData,
-              [symbolStrategyKey]: {
+              [key]: {
                 open: data.open,
                 high: data.high,
                 Low: data.low,
@@ -63,42 +50,49 @@ const ActiveSymbolTable = ({ marketData }) => {
 
             setTimeLeft((prevTimeLeft) => ({
               ...prevTimeLeft,
-              [symbolStrategyKey]: Math.max(0, Math.floor((data.close_time - Date.now()) / 1000)),
+              [key]: Math.max(0, Math.floor((data.close_time - Date.now()) / 1000)),
             }));
+
+            updateStrategyStatusStore(key, 'loaded');
           }
         };
 
+        connectWS(url_ws);
         suscribeToWS(url_ws, handleMessage);
-        connections.push({ url: url_ws, handler: handleMessage });
+        connectionRef.current.set(key, { url: url_ws, handler: handleMessage });
       });
-        
-      return () => {
-        connections.forEach(({ url, handler }) => {
+
+      
+      // ---------- Bajas ----------------
+      connectionRef.current.forEach(({ url, handler }, key) => {
+        if (!activeStrategies[key]) {
           unsubscribeFromWS(url, handler);
           closeWS(url);
-        });
-      };
+          connectionRef.current.delete(key);
+        }
+      });
+
     }, [activeStrategies]);
 
     useEffect(() => {
       const interval = setInterval(() => {
         setTimeLeft((prevTimeLeft) => {
           const updatedTimeLeft = {};
-          Object.keys(prevTimeLeft).forEach((symbol) => {
-            if (prevTimeLeft[symbol] > 0) {
-              updatedTimeLeft[symbol] = prevTimeLeft[symbol] - 1;
+          Object.keys(prevTimeLeft).forEach((key) => {
+            if (prevTimeLeft[key] > 0) {
+              updatedTimeLeft[key] = prevTimeLeft[key] - 1;
             } else {
               // Activamos el parpadeo
               setFlashSymbols((prevFlashSymbols) => ({
                 ...prevFlashSymbols,
-                [symbol]: !prevFlashSymbols[symbol],
+                [key]: !prevFlashSymbols[key],
               }));
 
               // Desactivamos el parpadeo después de 3 segundos
               setTimeout(() => {
                 setFlashSymbols((prevFlashSymbols) => ({
                   ...prevFlashSymbols,
-                  [symbol]: false,
+                  [key]: false,
                 }));
               }, 3000);
             }
@@ -109,32 +103,32 @@ const ActiveSymbolTable = ({ marketData }) => {
       return () => clearInterval(interval);
     }, []);
 
-    const handleDeactivate = async (symbol, strategyName) => {
-      const keyLoading = symbol+strategyName;
+    const handleDeactivate = async (symbol, strategyName, timeframe) => {
+      const keyLoading = symbol + strategyName + timeframe;
       const url_ws = import.meta.env.VITE_WS_URL + `/candle-stream/${keyLoading}`;
 
       try {
-        await stopStrategy(symbol, strategyName);
+        await stopStrategy(symbol, strategyName, timeframe);
         unsubscribeFromWS(url_ws);
         closeWS(url_ws);
 
-        deactivateStrategy(symbol, strategyName)
+        deactivateStrategyStore(symbol, strategyName, timeframe);
 
         setSymbolsData((prevData) => {
           const updatedData = { ...prevData };
-          delete updatedData[symbol];
+          delete updatedData[keyLoading];
           return updatedData;
         });
 
         setTimeLeft((prevTimeLeft) => {
           const updatedTimeLeft = { ...prevTimeLeft };
-          delete updatedTimeLeft[symbol];
+          delete updatedTimeLeft[keyLoading];
           return updatedTimeLeft;
         });
 
         setFlashSymbols((prevFlashSymbols) => {
           const updatedFlashSymbols = { ...prevFlashSymbols };
-          delete updatedFlashSymbols[symbol];
+          delete updatedFlashSymbols[keyLoading];
           return updatedFlashSymbols;
         });
 
@@ -164,13 +158,11 @@ const ActiveSymbolTable = ({ marketData }) => {
 
    const renderRow = ([symbolStrategyKey, strategyMeta], index) => {
     const data = symbolsData[symbolStrategyKey] || {};
-    const isLoadingThisSYmbol = isLoadingSymbols[symbolStrategyKey];
-    // const [symbol, strategyName] = symbolStrategyKey.split(/-(?=[^-]+$)/);
-
-    console.log('111 🔄 Renderizando fila:', symbolStrategyKey, strategyMeta, data, isLoadingThisSYmbol);
+    const { symbol, strategyName, timeframe } = strategyMeta;
 
 
-    if (isLoadingThisSYmbol) {
+
+    if (!symbolsData[symbolStrategyKey]) {
       return (
         <tr key={symbolStrategyKey}>
           <td colSpan={headers.length} className="px-4 py-4 text-center text-blue-600">
@@ -188,10 +180,10 @@ const ActiveSymbolTable = ({ marketData }) => {
 
     return (
       <tr key={symbolStrategyKey} className="hover:bg-gray-50 transition duration-150">
-        <td className="px-4 py-2 font-medium">{strategyMeta.symbol}</td>
-        <td className="px-4 py-2 font-medium">{strategyMeta.strategyName || '-'}</td>
+        <td className="px-4 py-2 font-medium">{symbol}</td>
+        <td className="px-4 py-2 font-medium">{strategyName || '-'}</td>
         <td className="px-4 py-2">{data?.close || '-'}</td>
-        <td className="px-4 py-2">{selectedTimeframe || '-'}</td>
+        <td className="px-4 py-2">{timeframe || '-'}</td>
 
 
         <td 
@@ -206,7 +198,7 @@ const ActiveSymbolTable = ({ marketData }) => {
         <td className="px-4 py-2">{data?.volume || '-'}</td>
         <td className="px-4 py-2">
           <button
-            onClick={() => handleDeactivate(strategyMeta.symbol, strategyMeta.strategyName)}
+            onClick={() => handleDeactivate(symbol, strategyName, timeframe)}
             className="text-red-600 hover:underline text-xs"
           >
             {t('active_symbols.deactivate')}
