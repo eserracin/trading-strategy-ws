@@ -18,5 +18,5 @@ async def listar_estrategias():
  # Detener la estrategia y devolver el resultado
 @router.post("/detener-estrategia")
 async def detener_estrategia(req: StrategyEntity):
-    resultado = await stop_strategy(req.symbol, req.strategy)
+    resultado = await stop_strategy(req.symbol, req.strategy, req.timeframe)
     return resultado

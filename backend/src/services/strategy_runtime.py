@@ -81,7 +81,7 @@ class StrategyRunner:
                 async for kline in bws.klines_stream():
                     candle = kline["k"]
 
-                    groupName = symbol + strategy_name
+                    groupName = symbol + strategy_name + self.timeframe
 
                     # Siempre que recibimos nueva data, enviamos a clientes
                     await self.notificar_candle({
@@ -206,7 +206,7 @@ class StrategyRunner:
         # logger.info(f"📊 Enviando candle a clientes: {mensaje}")
         await ws_manager.broadcast(mensaje, group=group)
 
-    def detener_estrategia(self, symbol, strategy_name):
+    def detener_estrategia(self, symbol, strategy_name, timeframe):
         import time
 
         key = f"{symbol}_{strategy_name}"

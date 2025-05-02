@@ -9,13 +9,13 @@ async def execute_strategy(symbol: str, strategy_name: str, timeframe: str, test
     resultado = strategy_runner.iniciar_estrategia(symbol, strategy_name, timeframe, test)
     return {"success": True, "data": resultado}
 
-async def stop_strategy(symbol: str, strategy_name: str):
+async def stop_strategy(symbol: str, strategy_name: str, timeframe: str):
     key = f"{symbol}_{strategy_name}"
     # print(f"Deteniendo estrategia: {strategy_runner.task}")
     if key not in strategy_runner.task:
         raise HTTPException(status_code=404, detail="Estrategia no encontrada")
 
-    resultado = strategy_runner.detener_estrategia(symbol, strategy_name)
+    resultado = strategy_runner.detener_estrategia(symbol, strategy_name, timeframe)
     return {"success": True, "data": resultado}
 
 async def get_available_strategies():
