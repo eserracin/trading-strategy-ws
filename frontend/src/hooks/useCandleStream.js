@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, use } from "react";
 import { connectWS, suscribeToWS, unsubscribeFromWS, closeWS } from "../services/ws";
 
 /**
@@ -11,13 +11,22 @@ import { connectWS, suscribeToWS, unsubscribeFromWS, closeWS } from "../services
 export const useCandleStream = (key, onData) => {
     // Manteng la ultima referencia de callback sin disparar re-suscripciones
     const onDataRef = useRef(onData);
-    onDataRef.current = onData;
+    const handelRef = useRef(null);
+    const urlRef = useRef(null);
 
-    // Memoriza la url para que cambie solo cuando cambie la clave
-    const url = key ? `${import.meta.env.VITE_WS_URL}/candle-stream/${encodeURIComponent(key)}` : null;
 
     useEffect(() => {
-        if (!url) return;
+        // Actualiza la referencia de callback
+        onDataRef.current = onData;
+    }, [onData]);
+
+
+    useEffect(() => {
+        if (!key) return;
+
+        // Memoriza la url para que cambie solo cuando cambie la clave
+        const url = key ? `${import.meta.env.VITE_WS_URL}/candle-stream/${encodeURIComponent(key)}` : null;
+        urlRef.current = url;
 
         // Handler interno que delega en la ref actual
         const handler = (evt) => {
@@ -28,16 +37,18 @@ export const useCandleStream = (key, onData) => {
                 console.error("Error parsing message:", err);
             }
         };
+        handelRef.current = handler;
 
-        // 1. Abrir o reusar la conexion
+        // Conexión y suscripción
         connectWS(url);
-        // 2. Suscribirse al stream
         suscribeToWS(url, handler);
 
         // 3. Limpiar al desmontar
         return () => {
-            unsubscribeFromWS(url, handler);
-            closeWS(url);
+            if (urlRef.current){
+                unsubscribeFromWS(url, handler);
+                closeWS(url);
+            }
         };
-    }, [url]); // Solo se vuelve a ejecutar si cambia la url (la clave)
+    }, [key]); // Solo se vuelve a ejecutar si cambia la url (la clave)
 };

@@ -1,12 +1,46 @@
-# React + Vite
+# 📈 Trading Strategy Dashboard - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este es el frontend de una plataforma de estrategias de trading en tiempo real. Utiliza **React**, **Vite**, **Tailwind CSS**, y **Zustand** para la gestión de estado, con soporte para WebSockets y múltiples idiomas (i18n con español e inglés).
 
-Currently, two official plugins are available:
+## 🚀 Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Visualización de **símbolos activos** y señales de entrada.
+- Activación/desactivación de estrategias específicas por símbolo, estrategia y temporalidad.
+- Soporte **multilenguaje** (español/inglés).
+- Integración con API REST y WebSocket.
+- Configuración de **temporalidades** desde archivo JSON.
+- Panel principal de estrategias en tiempo real.
 
-## Expanding the ESLint configuration
+## 📂 Estructura del Proyecto
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+├── public/
+│   └── locales/            # Traducciones i18n (en/es)
+├── src/
+│   ├── assets/             # Recursos como íconos y configuraciones
+│   ├── components/         # Componentes principales de la UI
+│   ├── hooks/              # Custom hooks como useCandleStream
+│   ├── services/           # Servicios REST y WebSocket
+│   ├── store/              # Estado global (Zustand)
+│   ├── App.jsx             # Componente principal
+│   └── main.jsx            # Punto de entrada
+├── .env                    # Variables de entorno
+├── package.json            # Dependencias y scripts
+├── tailwind.config.js      # Configuración de Tailwind
+└── vite.config.js          # Configuración de Vite
+
+# 1. Clonar el repositorio (si aplica)
+git clone https://github.com/tu-usuario/tu-repo.git
+cd nombre-del-proyecto
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Crear archivo .env y definir variables necesarias
+cp .env.example .env
+# Asegúrate de definir variables como:
+# VITE_API_URL=https://api.ejemplo.com
+# VITE_WS_URL=wss://ws.ejemplo.com
+
+# 4. Ejecutar en modo desarrollo
+npm run dev
