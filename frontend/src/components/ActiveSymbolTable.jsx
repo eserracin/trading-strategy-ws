@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { stopStrategy } from '../services/api';
 import useStrategyStore from '../store/strategyStore';
-import ReusableTable from './util/ReusableTable';
+import ReusableTable from './ui/ReusableTable';
 import { closeWS, connectWS, suscribeToWS, unsubscribeFromWS } from "../services/ws";
 
 const ActiveSymbolTable = ({ marketData }) => {
