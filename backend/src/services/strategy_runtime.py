@@ -75,7 +75,7 @@ class StrategyRunner:
         trade_executor = TradeExecutor(client=self.client, symbol=symbol, logger=logger, isMock=test)
 
         # Obtiene historial inicial sufiecient antes de arrancar el websocket
-        df_hist = trade_strategy.obtener_historial_inicial(symbol, INTERVAL, period=50) 
+        df_hist = trade_strategy.obtener_historial_inicial(symbol, self.timeframe, period=50) 
 
         try:
             async with BinanceWebSocket(symbol, self.timeframe, logger) as bws:
