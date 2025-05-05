@@ -1,9 +1,10 @@
+// src/components/StrategyButton.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchStrategies, startStrategy, searchSymbols, createActiveSymbol } from '../services/api';
 import useStrategyStore from '../store/strategyStore';
 import timeframes from '../assets/config/timeframes.json';
 
-const StrategyButton = ({ onExecuteStrategy }) => {
+const StrategyButton = () => {
   const [strategies, setStrategies] = useState([]);
   const [selectedStrategy, setSelectedStrategy] = useState('');
   const [selectedTimeframe, setSelectedTimeframe] = useState('');
@@ -59,14 +60,11 @@ const StrategyButton = ({ onExecuteStrategy }) => {
         const query = symbolQuery.toUpperCase();
         const cached = symbolCache.current.get(query);
         if (cached) {
-          console.log('📦 Usando caché:', query);
           setSymbolSuggestions(cached);
           return;
         }
 
-        console.log('🔍 Buscando en API:', query);
         const results = await searchSymbols(query);
-        console.log('📥 Resultados:', results);
         symbolCache.current.set(query, results);
         setSymbolSuggestions(results);
       };
@@ -80,15 +78,9 @@ const StrategyButton = ({ onExecuteStrategy }) => {
 
   // Evento Click => Boton de activar estrategia
   const handleClick = async () => {
-      if (!selectedStrategy || !selectedSymbol || !selectedTimeframe) {
-        alert('Debes seleccionar símbolo, estrategia y temporalidad.');
-        return;
-      }
-
     try {
       await startStrategy(selectedSymbol, selectedStrategy, selectedTimeframe);
       // await createActiveSymbol(selectedSymbol, selectedStrategy);
-      onExecuteStrategy(selectedSymbol);
       activateStrategyStore(selectedSymbol, selectedStrategy, selectedTimeframe);
       setSelectedStrategyStore(selectedSymbol, selectedStrategy, selectedTimeframe);
     } catch (error) {
@@ -211,10 +203,11 @@ const StrategyButton = ({ onExecuteStrategy }) => {
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md transition disabled:opacity-50"
             onClick={handleClick}
             disabled={!isActivatable}
+            type='button'
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="white">
+            {/* <svg className="w-4 h-4" viewBox="0 0 24 24" fill="white">
               <path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 .8 1.6L15 13.2V19a1 1 0 0 1-1.45.9l-4-2A1 1 0 0 1 9 17v-3.8L3.2 4.6A1 1 0 0 1 3 4z"/>
-            </svg>
+            </svg> */}
             Activar
           </button>
           <button
