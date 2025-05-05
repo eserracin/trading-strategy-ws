@@ -1,3 +1,4 @@
+# src/core/strategy_pattern/base.py
 from abc import ABC, abstractmethod
 
 class BaseStrategy(ABC):

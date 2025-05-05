@@ -1,3 +1,4 @@
+# src/services/strategy_runtime.py
 import asyncio
 import threading
 from core import ContextStrategy, TradeExecutor
@@ -203,7 +204,7 @@ class StrategyRunner:
             "interval": candle["interval"],
             "close_time": candle["close_time"]
         }
-        # logger.info(f"📊 Enviando candle a clientes: {mensaje}")
+        # logger.info(f"📊 Enviando candle a clientes: {mensaje}, en el grupo {group}")
         await ws_manager.broadcast(mensaje, group=group)
 
     def detener_estrategia(self, symbol, strategy_name, timeframe):

@@ -1,0 +1,1 @@
+# src/core/trade_manager/__init__.py

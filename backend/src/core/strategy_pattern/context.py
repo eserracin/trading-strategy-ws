@@ -1,3 +1,4 @@
+# src/core/strategy_pattern/context.py
 from src.strategies.scalping.scalping_lp import ScalpingStrategyLP
 
 class ContextStrategy:
