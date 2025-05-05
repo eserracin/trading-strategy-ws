@@ -1,3 +1,4 @@
+// src/services/ws.js
 let sockets = {};
 let listeners = {};
 
@@ -18,18 +19,23 @@ export const connectWS = (url) => {
     socket.onmessage = (event) => {
         let data
         try {
+            if (!event.data) throw new Error("Mensaje vacío");
             data = JSON.parse(event.data);
         } catch (error) {
             console.error('❌ Error al parsear el mensaje del WebSocket:', error);
             return;
         }
-        listeners[url].forEach(listener => listener(data));
+        if (Array.isArray(listeners[url])) {
+            listeners[url].forEach(listener => listener(data));
+        }
     };
 
     socket.onclose = (event) => {
-        if(listeners[url]) {
-            listeners[url].forEach(listener => listener({ tipo: 'closed', reason: event.reason }));
-        }
+        if (Array.isArray(listeners[url])) {
+            listeners[url].forEach(listener =>
+              listener({ tipo: 'closed', reason: event.reason })
+            );
+          }
         console.warn('⚠️ Conexión WebSocket cerrada:', event.reason);
         delete sockets[url];
         delete listeners[url];
@@ -65,7 +71,7 @@ export const sendMessageToWS = (url, message) => {
 
 export const suscribeToWS = (url, callback) => {
     if (!listeners[url]) listeners[url] = [];
-
+    
     if (!listeners[url].includes(callback)) {
         listeners[url].push(callback);
     }

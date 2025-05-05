@@ -1,4 +1,5 @@
-import { useEffect, useCallback, useRef, use } from "react";
+// src/hooks/useCandleStream.js
+import { useEffect, useRef } from "react";
 import { connectWS, suscribeToWS, unsubscribeFromWS, closeWS } from "../services/ws";
 
 /**
@@ -9,46 +10,42 @@ import { connectWS, suscribeToWS, unsubscribeFromWS, closeWS } from "../services
  * @param {(data: any) => void} onData
  */
 export const useCandleStream = (key, onData) => {
-    // Manteng la ultima referencia de callback sin disparar re-suscripciones
-    const onDataRef = useRef(onData);
-    const handelRef = useRef(null);
-    const urlRef = useRef(null);
+  const onDataRef = useRef(onData);
+  onDataRef.current = onData;
 
+  const url = key ? `${import.meta.env.VITE_WS_URL}/candle-stream/${encodeURIComponent(key)}` : null;
+  
+  const handlerRef = useRef(null);
+  const urlRef = useRef(null);
+  const connectedRef = useRef(false);
 
-    useEffect(() => {
-        // Actualiza la referencia de callback
-        onDataRef.current = onData;
-    }, [onData]);
+  useEffect(() => {
+    if (!url) return;
 
+    urlRef.current = url;
+    connectedRef.current = true;
 
-    useEffect(() => {
-        if (!key) return;
+    const handler = (data) => {
+      try {
+        onDataRef.current(data);
+      } catch (err) {
+        console.error("🔴 Error parsing message in useCandleStream:", err);
+      }
+    };
 
-        // Memoriza la url para que cambie solo cuando cambie la clave
-        const url = key ? `${import.meta.env.VITE_WS_URL}/candle-stream/${encodeURIComponent(key)}` : null;
-        urlRef.current = url;
+    connectWS(url);
+    suscribeToWS(url, handler);
+    handlerRef.current = handler;
 
-        // Handler interno que delega en la ref actual
-        const handler = (evt) => {
-            try{
-                const json = JSON.parse(evt.data);
-                onDataRef.current(json);
-            }catch (err){
-                console.error("Error parsing message:", err);
-            }
-        };
-        handelRef.current = handler;
+    return () => {
+      // Previene cierres múltiples innecesarios si ya se limpió por un render anterior
+      if (connectedRef.current) return;
+      connectedRef.current = false;
 
-        // Conexión y suscripción
-        connectWS(url);
-        suscribeToWS(url, handler);
-
-        // 3. Limpiar al desmontar
-        return () => {
-            if (urlRef.current){
-                unsubscribeFromWS(url, handler);
-                closeWS(url);
-            }
-        };
-    }, [key]); // Solo se vuelve a ejecutar si cambia la url (la clave)
+      if (urlRef.current) {
+        unsubscribeFromWS(urlRef.current, handlerRef.current);
+        closeWS(urlRef.current);
+      }
+    };
+  }, [url]); // Solo depende de la URL real (codificada)
 };

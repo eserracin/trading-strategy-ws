@@ -1,3 +1,4 @@
+# src/models/strategy.py
 from pydantic import BaseModel, Field
 
 class StrategyEntity(BaseModel):

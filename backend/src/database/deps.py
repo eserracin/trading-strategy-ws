@@ -1,3 +1,4 @@
+# src/database/deps.py
 from .database import SessionLocal
 from sqlalchemy.orm import Session
 

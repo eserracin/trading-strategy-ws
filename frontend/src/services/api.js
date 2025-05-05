@@ -4,7 +4,6 @@ export const fetchStrategies = async () => {
   try {
     const response = await fetch(`${BASE_URL}/strategy/listar-estrategias`)
     const json = await response.json();
-    console.log(`fetched strategies: ${JSON.stringify(json)}`)
     if (!json.success) {
       throw new Error('Network response was not ok');
     }
@@ -99,7 +98,6 @@ export const searchSymbols = async (query) => {
   try {
     const response = await fetch(`${BASE_URL}/symbols?q=${query}`)
     const json = await response.json();
-    console.log(`fetched symbols: ${JSON.stringify(json)}`)
     if (!json.success) {
       throw new Error('Network response was not ok');
     }
@@ -115,9 +113,6 @@ export const getMarketData = async (symbol) => {
   try {
     const response = await fetch(`${BASE_URL}/market-data/${symbol}`)
     const json = await response.json();
-
-    console.log(`fetched market data: ${JSON.stringify(json)}`) 
-
     if (!json.success) {
       throw new Error('Network response was not ok');
     }

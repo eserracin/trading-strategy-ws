@@ -1,3 +1,4 @@
+# src/controllers/simbolos_controller.py
 from fastapi import APIRouter
 from src.models.strategy import StrategyEntity
 from src.services.symbol_service import create_active_symbol, delete_active_symbol

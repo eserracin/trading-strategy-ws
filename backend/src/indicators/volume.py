@@ -1,3 +1,4 @@
+# src/database/init_db.py
 import pandas as pd
 
 def volume_sma(volume: pd.Series, period: int) -> pd.Series:

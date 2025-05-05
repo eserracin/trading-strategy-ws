@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .venv
+venv
 ./node_modules
 
 # Python cache files

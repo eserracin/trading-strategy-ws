@@ -1,3 +1,4 @@
+# src/config/settings.py
 import os
 from dotenv import load_dotenv
 
