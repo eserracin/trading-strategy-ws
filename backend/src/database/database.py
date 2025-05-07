@@ -15,9 +15,5 @@ logger.info(f"DATABASE_URL: {DATABASE_URL}")
 
 # Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
-
-# Create a configured "Session" class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Create a base class for declarative models
 Base = declarative_base()

@@ -1,6 +1,6 @@
 # src/database/init_db.py
 from .database import Base, engine
-from .models import EstrategiaActiva, Orden, Transaccion
+from .models import EstrategiaActiva, Orden, Transaccion, User
 
 def init_db():
     """Create the database tables if they do not exist yet."""
