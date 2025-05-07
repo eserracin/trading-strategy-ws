@@ -1,3 +1,4 @@
+# src/strategies/scalping/scalping_lp.py
 from core import BaseStrategy
 from indicators.ema import ema_gpt, ema
 from indicators.rsi import rsi

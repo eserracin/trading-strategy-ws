@@ -1,0 +1,30 @@
+{
+    "dashboard": {
+      "title": "Panel de Administración de Estrategias",
+      "activate_strategy": "Activar Estrategia",
+      "market_data": "Datos del Mercado"
+    },
+    "signals": {
+      "entry_signals": "Señales de Entrada"
+    },
+    "active_symbols": {
+      "title": "Símbolos Activos",
+      "symbol": "Símbolo",
+      "price": "Precio",
+      "change": "Cambio",
+      "volume": "Volumen",
+      "no_symbols": "No hay símbolos activos",
+      "deactivate": "Desactivar",
+      "loading": "Cargando simbolo...",
+      "table": {
+        "name": "Nombre",
+        "strategy": "Estrategia",
+        "interval": "Intervalo",
+        "price": "Precio",
+        "close_time": "Hora de Cierre",
+        "volume": "Volumen",
+        "actions": "Accion"
+      }
+    }
+  }
+  

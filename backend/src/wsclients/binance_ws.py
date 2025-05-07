@@ -1,3 +1,4 @@
+# src/wsclients/binance_ws.py
 from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient
 import asyncio
 import logging
@@ -37,12 +38,19 @@ class BinanceWebSocket:
             self.logger.info("Conexión WebSocket cerrada con Binance Future")
 
     async def klines_stream(self):
-        while True:
-            try:
+        try:
+            while True:
                 message = await self.queue.get()
                 if message is None:  # Salir del generador
                     break
                 yield message
-            except Exception as e:
-                self.logger.exception("❌ Error recibiendo datos del WebSocket")
-                break
+        except asyncio.CancelledError:
+            self.logger.info("⛔ klines_stream() cancelado con éxito.")
+            return
+
+    
+    async def close(self):
+        if self.client:
+            await self.client.stop()
+            await self.queue.put(None)  # Señal para terminar generador
+            self.logger.info("🔌 WebSocket Binance cerrado correctamente.")

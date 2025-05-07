@@ -1,19 +1,29 @@
+# src/services/strategy_service.py
 from src.services.strategy_runtime import StrategyRunner
+from src.core import ContextStrategy
 import requests
 from fastapi import HTTPException
 
-async def execute_strategy(symbol: str, strategy_name: str, test: bool = False):
-    strategy_runner = StrategyRunner()
-    resultado = list(strategy_runner.iniciar_estrategia(symbol, strategy_name, test))
+strategy_runner = StrategyRunner()
+
+async def execute_strategy(symbol: str, strategy_name: str, timeframe: str, test: bool = False):
+    resultado = strategy_runner.iniciar_estrategia(symbol, strategy_name, timeframe, test)
+    return {"success": True, "data": resultado}
+
+async def stop_strategy(symbol: str, strategy_name: str, timeframe: str):
+    key = f"{symbol}_{strategy_name}"
+    # print(f"Deteniendo estrategia: {strategy_runner.task}")
+    if key not in strategy_runner.task:
+        raise HTTPException(status_code=404, detail="Estrategia no encontrada")
+
+    resultado = strategy_runner.detener_estrategia(symbol, strategy_name, timeframe)
     return {"success": True, "data": resultado}
 
 async def get_available_strategies():
-    strategy_runner = StrategyRunner()
-    resultado = strategy_runner.estrategias_disponibles()
+    resultado = list(ContextStrategy.STRATEGIES.keys())
     return {"success": True, "data": resultado}
 
 async def get_symbols(q: str = None):
-    strategy_runner = StrategyRunner()
     all_symbols = strategy_runner.get_symbols()
     if not q:
         return {"success": True, "data": all_symbols}

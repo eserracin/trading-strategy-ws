@@ -10,3 +10,5 @@ websockets
 fastapi
 uvicorn[standard]
 sse-starlette
+sqlalchemy
+psycopg2

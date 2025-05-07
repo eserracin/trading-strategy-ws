@@ -1,3 +1,4 @@
+# src/indicators/rsi.py
 import pandas as pd
 
 def rsi(series: pd.Series, period: int = 14) -> pd.Series:
