@@ -3,7 +3,10 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from src.database.deps import get_db
 from src.database.models import EstrategiaActiva
+from src.services.strategy_runtime import StrategyRunner
 from fastapi import HTTPException
+
+strategy_runner = StrategyRunner()
 
 async def create_active_symbol(symbol: str, strategy_name: str, db: Session = Depends(get_db)):
     """
@@ -34,3 +37,10 @@ async def delete_active_symbol(symbol: str, strategy_name: str, db: Session = De
     db.delete(estrategia)
     db.commit()
     return {"message": "Estrategia eliminada con éxito"}
+
+async def get_symbols(q: str = None):
+    all_symbols = strategy_runner.get_symbols()
+    if not q:
+        return {"success": True, "data": all_symbols}
+    symbols = [symbol for symbol in all_symbols if q.lower() in symbol.lower()]
+    return {"success": True, "data": symbols}

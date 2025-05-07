@@ -31,6 +31,7 @@ const StrategyButton = () => {
     const loadStrategies = async () => {
       try {
         const data = await fetchStrategies();
+        console.log('222 Response:', data); // Log the response dat
         setStrategies(data);
       } catch (error) {
         console.error('❌ Error fetching strategies:', error);

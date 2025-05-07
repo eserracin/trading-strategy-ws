@@ -1,13 +1,11 @@
-const BASE_URL = 'http://localhost:7000/api';
+// src/services/api.js
+import axiosClient  from "./axiosClient";
+
 
 export const fetchStrategies = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/strategy/listar-estrategias`)
-    const json = await response.json();
-    if (!json.success) {
-      throw new Error('Network response was not ok');
-    }
-    return json.data;
+    const response = await axiosClient.get('/strategy/listar-estrategias');
+    return response.data.data;
   } catch (error) {
     console.error('Error fetching strategies:', error);
     throw error;
@@ -15,43 +13,28 @@ export const fetchStrategies = async () => {
 }
 
 export const startStrategy = async (symbol, strategy, timeframe, test = true) => {
-    try {
-        const res = await fetch(`${BASE_URL}/strategy/ejecutar-estrategia`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ symbol, strategy, timeframe, test }),
-      })
-  
-      if (!res.ok) {
-        throw new Error('Network response was not ok');
-      }
-  
-      const data = await res.json();
-      return data;
-    } catch (error) {
-      console.error('Error executing strategy:', error);
-      throw error;
-    }
+  try {
+    const response = await axiosClient.post('/strategy/ejecutar-estrategia', {
+      symbol,
+      strategy,
+      timeframe,
+      test,
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error executing strategy:', error);
+    throw error;
   }
+}
 
 export const stopStrategy = async (symbol, strategy, timeframe) => {
   try {
-    const res = await fetch(`${BASE_URL}/strategy/detener-estrategia`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ symbol, strategy, timeframe }),
-    })
-
-    if (!res.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await res.json();
-    return data;
+    const response = await axiosClient.post('/strategy/detener-estrategia', {
+      symbol,
+      strategy,
+      timeframe,
+    });
+    return response.data.data;
   } catch (error) {
     console.error('Error stopping strategy:', error);
     throw error;
@@ -60,34 +43,21 @@ export const stopStrategy = async (symbol, strategy, timeframe) => {
 
 export const createActiveSymbol = async (symbol, strategy) => {
   try {
-    const res = await fetch(`${BASE_URL}/symbol/crear-simbolo-activo`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ symbol, strategy }),
-    })
-
-    if (!res.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await res.json();
-    return data;
+    const response = await axiosClient.post('/symbol/crear-simbolo-activo', {
+      symbol,
+      strategy,
+    });
+    return response.data;
   } catch (error) {
-    console.error('Error creating strategy:', error);
+    console.error('Error creating active symbol:', error);
     throw error;
   }
 }
 
 export const fetchTrades = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/operaciones`)
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
-    return data;
+    const response = await axiosClient.get('/operaciones');
+    return response.data;
   } catch (error) {
     console.error('Error fetching trades:', error);
     throw error;
@@ -96,30 +66,36 @@ export const fetchTrades = async () => {
 
 export const searchSymbols = async (query) => {
   try {
-    const response = await fetch(`${BASE_URL}/symbols?q=${query}`)
-    const json = await response.json();
-    if (!json.success) {
-      throw new Error('Network response was not ok');
-    }
-    const data = json.data;
-    return data;
+    const response = await axiosClient.get(`/symbol/obtener-simbolos?q=${query}`);
+    return response.data.data;
   } catch (error) {
     console.error('Error searching symbols:', error);
     throw error;
   }
 }
 
-export const getMarketData = async (symbol) => {
+export const loginUser = async (email, password) => {
   try {
-    const response = await fetch(`${BASE_URL}/market-data/${symbol}`)
-    const json = await response.json();
-    if (!json.success) {
-      throw new Error('Network response was not ok');
-    }
-    const data = json.data;
-    return data;
+    const response = await axiosClient.post('/auth/iniciar-sesion', {
+      email,
+      password,
+    });
+    return response.data;
   } catch (error) {
-    console.error('Error fetching market data:', error);
+    console.error('Error logging in:', error);
+    throw error;
+  }
+}
+
+export const registerUser = async (email, password) => {
+  try {
+    const response = await axiosClient.post('/auth/registrar', {
+      email,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error registering:', error);
     throw error;
   }
 }
