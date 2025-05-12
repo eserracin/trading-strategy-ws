@@ -80,8 +80,9 @@ const StrategyButton = () => {
   // Evento Click => Boton de activar estrategia
   const handleClick = async () => {
     try {
+      const key = selectedSymbol + selectedStrategy + selectedTimeframe;
       await startStrategy(selectedSymbol, selectedStrategy, selectedTimeframe);
-      // await createActiveSymbol(selectedSymbol, selectedStrategy);
+      await createActiveSymbol(key, selectedSymbol, selectedStrategy, selectedTimeframe);
       activateStrategyStore(selectedSymbol, selectedStrategy, selectedTimeframe);
       setSelectedStrategyStore(selectedSymbol, selectedStrategy, selectedTimeframe);
     } catch (error) {

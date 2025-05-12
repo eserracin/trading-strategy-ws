@@ -41,11 +41,13 @@ export const stopStrategy = async (symbol, strategy, timeframe) => {
   }
 }
 
-export const createActiveSymbol = async (symbol, strategy) => {
+export const createActiveSymbol = async (keySymbolActive, symbol, strategy, timeframe) => {
   try {
     const response = await axiosClient.post('/symbol/crear-simbolo-activo', {
+      keySymbolActive,
       symbol,
       strategy,
+      timeframe
     });
     return response.data;
   } catch (error) {
