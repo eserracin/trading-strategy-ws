@@ -16,7 +16,7 @@ operaciones = []
 
 logger = logging.getLogger("TRADING_BOT")
 
-class StrategyRunner:
+class StrategyRealTimeRunner:
     def __init__(self):
         self.task = {}
         self.client = Client(api_key=API_KEY, api_secret=API_SECRET)
@@ -75,7 +75,7 @@ class StrategyRunner:
         trade_executor = TradeExecutor(client=self.client, symbol=symbol, logger=logger, isMock=test)
 
         # Obtiene historial inicial sufiecient antes de arrancar el websocket
-        df_hist = trade_strategy.obtener_historial_inicial(symbol, self.timeframe, period=50) 
+        df_hist = trade_strategy.obtener_historial_inicial_con_periodo(symbol, self.timeframe, period=50) 
 
         try:
             async with BinanceWebSocket(symbol, self.timeframe, logger) as bws:
@@ -248,7 +248,7 @@ class StrategyRunner:
         symbols = [symbol["symbol"] for symbol in exchange_info["symbols"] if symbol["status"] == "TRADING"]
         return sorted(symbols)
 
-strategy_runner = StrategyRunner()
+strategy_runner = StrategyRealTimeRunner()
 
 def get_operations():
     return operaciones

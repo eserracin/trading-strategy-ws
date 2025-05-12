@@ -30,4 +30,4 @@ def ema(series: pd.Series, period: int):
     return pd.Series(ema, index=series.index)
 
 def ema_gpt(series: pd.Series, period: int):
-    return series.ewm(span=period, adjust=False).mean()
+    return series.ewm(span=period, adjust=False, min_periods=0).mean()

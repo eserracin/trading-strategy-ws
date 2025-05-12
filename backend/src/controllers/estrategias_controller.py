@@ -2,7 +2,7 @@
 # Controlador para manejar las rutas relacionadas con las estrategias de trading
 from fastapi import APIRouter, Depends
 from src.models.strategy import StrategyEntity
-from src.services.strategy_service import execute_strategy, get_available_strategies, stop_strategy
+from src.services.strategy_service import execute_strategy, get_available_strategies, stop_strategy, simulate_strategy
 from src.utils.jwt_utils import JWTBearer
 
 router = APIRouter(dependencies=[Depends(JWTBearer())])
@@ -11,6 +11,11 @@ router = APIRouter(dependencies=[Depends(JWTBearer())])
 @router.post("/ejecutar-estrategia")
 async def ejecutar_estrategia(req: StrategyEntity):
     resultado = await execute_strategy(req.symbol, req.strategy, req.timeframe, req.test)
+    return resultado
+
+@router.post("/simular-estrategia")
+async def simular_estrategia(req: StrategyEntity):
+    resultado = await simulate_strategy(req.symbol, req.strategy, req.timeframe, req.start_date, req.end_date, req.period, req.test)
     return resultado
 
 @router.get("/listar-estrategias")

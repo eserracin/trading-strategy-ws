@@ -38,7 +38,7 @@ logger = setup_logger()
 def signal_handler(signum, frame):
     logger.info(f"🚩 Señal recibida ({signum}). Cerrando estrategias activas...")
     try:
-        from src.services.strategy_runtime import strategy_runner
+        from src.services.strategy_realtime_runner import strategy_runner
         strategy_runner.detener_todas()
         logger.info("✅ Todas las estrategias fueron detenidas correctamente.")
     except Exception as e:

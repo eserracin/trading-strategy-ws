@@ -7,8 +7,10 @@ class EstrategiaActiva(Base):
     __tablename__ = "estrategias_activas"
 
     id = Column(Integer, primary_key=True, index=True)
+    keySymbolActive = Column(String(50), unique=True, index=True)
     symbol = Column(String(20), nullable=False)
-    nombre_estrategia = Column(String(100), nullable=False)
+    strategyName = Column(String(100), nullable=False)
+    timeframe = Column(String(20), nullable=False)  # M1, M5, H1, D1, etc.
     estado = Column(String(20), default="activa")
     fecha_inicio = Column(DateTime(timezone=True), server_default=func.now())
     fecha_cierre = Column(DateTime(timezone=True))
