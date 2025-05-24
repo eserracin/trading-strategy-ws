@@ -5,7 +5,9 @@ from controllers.ws_controller import router as ws_router
 from controllers.simbolos_controller import router as simbolos_router
 from controllers.estrategias_controller import router as estrategias_router
 from controllers.auth_controller import router as auth_router
+from controllers.optuna_controller import router as optuna_router
 from src.database.init_db import init_db
+from src.database import models # Ensure models are imported for init_db
 import signal
 import logging
 import sys
@@ -66,11 +68,12 @@ app.add_middleware(
 app.include_router(simbolos_router, prefix="/api/symbol")
 app.include_router(estrategias_router, prefix="/api/strategy")
 app.include_router(auth_router, prefix="/api/auth")
+app.include_router(optuna_router, prefix="/api/optuna")
 # Rutas de WebSocket
 app.include_router(ws_router, prefix="/ws")
 
 # 🚀 Inicializar base de datos en el arranque
 @app.on_event("startup")
 async def startup_event():
-    init_db()
+    init_db() # This should create all tables defined in models.py
     logger.info("🚀 Base de datos inicializada correctamente.")
